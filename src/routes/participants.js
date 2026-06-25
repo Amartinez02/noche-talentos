@@ -13,24 +13,24 @@ const MAX_MB  = 5
 
 export async function participantRoutes(fastify) {
 
-  // Hook de auth en todas las rutas /admin/participantes
+  // Hook de auth en todas las rutas /admin/participants
   fastify.addHook('onRequest', async (req, reply) => {
-    if (req.url.startsWith('/admin/participantes')) await requireAdmin(req, reply)
+    if (req.url.startsWith('/admin/participants')) await requireAdmin(req, reply)
   })
 
   /* ── Lista ── */
-  fastify.get('/admin/participantes', async (req, reply) => {
+  fastify.get('/admin/participants', async (req, reply) => {
     const participants = await db.listParticipants()
     return reply.view('admin/participants.njk', { participants })
   })
 
   /* ── Formulario nuevo ── */
-  fastify.get('/admin/participantes/nuevo', async (req, reply) => {
+  fastify.get('/admin/participants/new', async (req, reply) => {
     return reply.view('admin/participant-form.njk', { p: null, error: null })
   })
 
   /* ── Crear ── */
-  fastify.post('/admin/participantes', { config: { rawBody: false } }, async (req, reply) => {
+  fastify.post('/admin/participants', { config: { rawBody: false } }, async (req, reply) => {
     const { fields, photoPath, error } = await parseForm(req)
     if (error) return reply.view('admin/participant-form.njk', { p: null, error })
 
@@ -47,18 +47,18 @@ export async function participantRoutes(fastify) {
       display_order: parseInt(display_order) || 0,
       active: active === 'on'
     })
-    return reply.redirect('/admin/participantes')
+    return reply.redirect('/admin/participants')
   })
 
   /* ── Formulario editar ── */
-  fastify.get('/admin/participantes/:id/editar', async (req, reply) => {
+  fastify.get('/admin/participants/:id/edit', async (req, reply) => {
     const p = await db.getParticipant(req.params.id)
-    if (!p) return reply.redirect('/admin/participantes')
+    if (!p) return reply.redirect('/admin/participants')
     return reply.view('admin/participant-form.njk', { p, error: null })
   })
 
   /* ── Actualizar ── */
-  fastify.post('/admin/participantes/:id', async (req, reply) => {
+  fastify.post('/admin/participants/:id', async (req, reply) => {
     const { id } = req.params
     const { fields, photoPath, error } = await parseForm(req)
     if (error) {
@@ -80,17 +80,17 @@ export async function participantRoutes(fastify) {
       display_order: parseInt(display_order) || 0,
       active: active === 'on'
     })
-    return reply.redirect('/admin/participantes')
+    return reply.redirect('/admin/participants')
   })
 
   /* ── Eliminar ── */
-  fastify.post('/admin/participantes/:id/eliminar', async (req, reply) => {
+  fastify.post('/admin/participants/:id/delete', async (req, reply) => {
     const deleted = await db.deleteParticipant(req.params.id)
     if (deleted?.photo_path) {
       const full = path.join(__dirname, '../../static', deleted.photo_path)
       fs.unlink(full, () => {})
     }
-    return reply.redirect('/admin/participantes')
+    return reply.redirect('/admin/participants')
   })
 }
 

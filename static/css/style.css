@@ -333,7 +333,7 @@ img { max-width: 100%; display: block; }
   position: relative;
 }
 
-.form-container { width: 100%; max-width: 500px; position: relative; z-index: 1; }
+.form-container { width: 100%; max-width: 720px; position: relative; z-index: 1; }
 
 .back-link {
   display: inline-flex; align-items: center; gap: .4rem;
@@ -373,6 +373,11 @@ img { max-width: 100%; display: block; }
 .form-desc {
   font-size: .88rem; color: var(--gray); margin-bottom: 1.6rem; line-height: 1.6;
 }
+
+.form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.5rem;
+}
+.form-grid .field-full { grid-column: 1 / -1; }
 
 .field { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1.1rem; }
 .field label {
@@ -447,7 +452,7 @@ img { max-width: 100%; display: block; }
 }
 
 /* ── Estado en el ticket ── */
-.t-status { font-family: var(--font-head); font-size: .82rem; padding: .2rem .6rem; border-radius: 999px; }
+.t-status { display: inline-block; font-family: var(--font-head); font-size: .82rem; padding: .2rem .6rem; border-radius: 999px; white-space: nowrap; }
 .t-status.validated { background: #dcfce7; color: #15803d; }
 .t-status.paid      { background: #dbeafe; color: #1d4ed8; }
 .t-status.pending   { background: var(--cream-dk); color: var(--gray); }
@@ -527,7 +532,7 @@ img { max-width: 100%; display: block; }
   display: flex; gap: 1.25rem;
   padding: 1.4rem 1.75rem 1.2rem;
 }
-.t-info { flex: 1; display: flex; flex-direction: column; gap: .85rem; }
+.t-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .85rem; }
 .t-field { display: flex; flex-direction: column; gap: .12rem; }
 .t-label { font-family: var(--font-head); font-size: .57rem; letter-spacing: .2em; color: var(--gray); text-transform: uppercase; }
 .t-value { font-size: .9rem; font-weight: 600; color: var(--text-dark); line-height: 1.3; }
@@ -1248,6 +1253,144 @@ select:focus { outline: none; border-color: var(--maroon); }
   }
 }
 
+/* =============================================
+   PROOF MODAL — admin tickets
+   ============================================= */
+.proof-modal {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,.72);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+.proof-modal.hidden { display: none; }
+.proof-modal-box {
+  background: var(--white);
+  border-radius: var(--radius);
+  max-width: 560px; width: 100%;
+  box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column;
+  max-height: 90vh; overflow: hidden;
+}
+.proof-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .85rem 1.1rem;
+  border-bottom: 1.5px solid var(--cream-dk);
+  font-family: var(--font-head); font-size: .85rem;
+  color: var(--maroon); letter-spacing: .04em;
+}
+.proof-modal-close {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.4rem; line-height: 1; color: var(--gray);
+  padding: 0 .2rem; transition: color .15s;
+}
+.proof-modal-close:hover { color: var(--maroon); }
+.proof-modal-body {
+  flex: 1; overflow-y: auto;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem; background: var(--cream-lt);
+}
+.proof-modal-body img {
+  max-width: 100%; max-height: 65vh;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  object-fit: contain;
+}
+.proof-modal-footer {
+  padding: .75rem 1.1rem;
+  border-top: 1.5px solid var(--cream-dk);
+  display: flex; justify-content: flex-end;
+}
+.proof-none { color: var(--gray); opacity: .45; font-size: .85rem; }
+
+/* =============================================
+   CONTACT BAR — home page
+   ============================================= */
+.contact-bar {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: .75rem;
+  padding: .7rem 1rem;
+  background: rgba(123,23,23,.07);
+  border: 1.5px solid rgba(123,23,23,.18);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-head); font-size: .82rem;
+  color: var(--gray); letter-spacing: .04em;
+}
+.contact-bar svg { color: #25D366; flex-shrink: 0; }
+.contact-link {
+  color: var(--maroon); font-weight: 600;
+  text-decoration: underline; text-underline-offset: 2px; text-decoration-style: dotted;
+  transition: opacity .15s;
+}
+.contact-link:hover { opacity: .75; }
+.contact-sep { color: var(--gray); opacity: .5; }
+
+/* =============================================
+   TRANSFER INFO — purchase.njk
+   ============================================= */
+.transfer-info {
+  background: var(--cream-lt);
+  border: 1.5px solid var(--cream-dk);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem 1.1rem;
+  margin-bottom: 1.5rem;
+}
+.transfer-info-header {
+  display: flex; align-items: center; gap: .5rem;
+  font-family: var(--font-head); font-size: .8rem; font-weight: 600;
+  color: var(--maroon); letter-spacing: .06em; text-transform: uppercase;
+  margin-bottom: .85rem;
+}
+.transfer-info-header svg { flex-shrink: 0; color: var(--maroon); }
+.transfer-banks {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem;
+}
+.transfer-bank {
+  background: var(--white);
+  border: 1.5px solid var(--cream-dk);
+  border-radius: var(--radius-xs);
+  padding: .65rem .9rem;
+}
+.bank-name {
+  font-family: var(--font-head); font-size: .78rem; color: var(--maroon);
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: .2rem;
+}
+.bank-detail {
+  font-size: .9rem; color: var(--text-dark); line-height: 1.4;
+}
+.bank-detail strong { font-family: var(--font-head); letter-spacing: .04em; }
+.bank-holder {
+  font-size: .75rem; color: var(--gray); margin-top: .15rem;
+}
+
+/* File upload field */
+.file-upload-wrap {
+  display: flex; align-items: center; gap: .6rem;
+  flex-wrap: wrap;
+}
+.file-upload-input { display: none; }
+.file-upload-btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .55rem 1rem;
+  background: var(--cream-lt);
+  border: 1.5px solid var(--cream-dk);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-head); font-size: .78rem; color: var(--maroon);
+  letter-spacing: .05em; text-transform: uppercase;
+  cursor: pointer; transition: border-color .15s, background .15s;
+  white-space: nowrap;
+}
+.file-upload-btn:hover { border-color: var(--maroon); background: var(--cream-dk); }
+.file-upload-name {
+  font-size: .82rem; color: var(--gray); flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 220px;
+}
+.field-hint {
+  font-size: .74rem; color: var(--gray); margin-top: .3rem;
+}
+
 @media (max-width: 560px) {
   .hero-grid { grid-template-columns: 80px 1fr 80px; }
   .hcard-title .ev-vive { font-size: 3.8rem; }
@@ -1261,6 +1404,8 @@ select:focus { outline: none; border-color: var(--maroon); }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .form-event-banner { flex-direction: column; align-items: flex-start; gap: .5rem; }
   .feb-meta { text-align: left; }
+  .form-grid { grid-template-columns: 1fr; }
+  .transfer-banks { grid-template-columns: 1fr; }
   .pf-row { grid-template-columns: 1fr; }
   .pf-photo-col { flex-direction: row; align-items: center; gap: 1rem; }
   .pf-photo-preview { width: 120px; height: 120px; }

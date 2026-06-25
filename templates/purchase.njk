@@ -30,33 +30,83 @@
       <div class="alert-error">{{ error }}</div>
       {% endif %}
 
-      <form method="POST" action="/comprar">
-        <div class="field">
-          <label for="name">Nombre completo</label>
-          <input type="text" id="name" name="name" placeholder="Ej: María García" required autocomplete="name">
+      {# ── Datos bancarios ── #}
+      <div class="transfer-info">
+        <div class="transfer-info-header">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          <span>Pago por transferencia bancaria</span>
         </div>
-        <div class="field">
-          <label for="phone">Teléfono</label>
-          <input type="tel" id="phone" name="phone" placeholder="Ej: 809-555-0123" required autocomplete="tel">
+        <div class="transfer-banks">
+          <div class="transfer-bank">
+            <p class="bank-name">Banco BHD</p>
+            <p class="bank-detail">Cta. Ahorro <strong>11524560018</strong></p>
+            <p class="bank-holder">Anthony Martinez · Céd. 402-2036731-8</p>
+          </div>
+          <div class="transfer-bank">
+            <p class="bank-name">Banco Popular</p>
+            <p class="bank-detail">Cta. Corriente <strong>765462981</strong></p>
+            <p class="bank-holder">Anthony Martinez · Céd. 402-2036731-8</p>
+          </div>
+          <div class="transfer-bank">
+            <p class="bank-name">Banco de Reservas</p>
+            <p class="bank-detail">Cta. Ahorro <strong>9601770369</strong></p>
+            <p class="bank-holder">Grimar Sánchez · Céd. 402-2292572-5</p>
+          </div>
         </div>
-        <div class="field">
-          <label for="email">Correo electrónico</label>
-          <input type="email" id="email" name="email" placeholder="Ej: maria@ejemplo.com" required autocomplete="email">
+      </div>
+
+      <form method="POST" action="/purchase" enctype="multipart/form-data">
+        <div class="form-grid">
+          <div class="field">
+            <label for="name">Nombre completo</label>
+            <input type="text" id="name" name="name" placeholder="Ej: María García" required autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="phone">Teléfono</label>
+            <input type="tel" id="phone" name="phone" placeholder="Ej: 809-555-0123" required autocomplete="tel">
+          </div>
+          <div class="field">
+            <label for="email">Correo electrónico</label>
+            <input type="email" id="email" name="email" placeholder="Ej: maria@ejemplo.com" required autocomplete="email">
+          </div>
+          {% if ministries and ministries.length > 0 %}
+          <div class="field">
+            <label for="ministry_id">Ministerio / Iglesia que te invita</label>
+            <select id="ministry_id" name="ministry_id">
+              <option value="">— Selecciona una opción —</option>
+              {% for m in ministries %}
+              <option value="{{ m.id }}">{{ m.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% else %}
+          <div class="field"></div>
+          {% endif %}
+
+          <div class="field field-full">
+            <label for="transfer_proof">Comprobante de transferencia</label>
+            <div class="file-upload-wrap">
+              <label for="transfer_proof" class="file-upload-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Seleccionar imagen
+              </label>
+              <span class="file-upload-name" id="file-name-label">Sin archivo seleccionado</span>
+              <input type="file" id="transfer_proof" name="transfer_proof" accept="image/jpeg,image/png,image/webp" class="file-upload-input">
+            </div>
+            <p class="field-hint">JPG, PNG o WebP · máx. 6 MB (opcional)</p>
+          </div>
         </div>
-        {% if ministries and ministries.length > 0 %}
-        <div class="field">
-          <label for="ministry_id">Ministerio / Iglesia que te invita</label>
-          <select id="ministry_id" name="ministry_id">
-            <option value="">— Selecciona una opción —</option>
-            {% for m in ministries %}
-            <option value="{{ m.id }}">{{ m.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        {% endif %}
+
         <button type="submit" class="btn-submit">OBTENER MI BOLETA →</button>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+document.getElementById('transfer_proof').addEventListener('change', function() {
+  const label = document.getElementById('file-name-label')
+  label.textContent = this.files.length ? this.files[0].name : 'Sin archivo seleccionado'
+})
+</script>
 {% endblock %}

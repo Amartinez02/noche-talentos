@@ -43,15 +43,16 @@ export async function migrate() {
 
     ALTER TABLE tickets ADD COLUMN IF NOT EXISTS ministry_id INT REFERENCES ministries(id) ON DELETE SET NULL;
     ALTER TABLE ministries ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
+    ALTER TABLE tickets ADD COLUMN IF NOT EXISTS transfer_proof VARCHAR(500);
   `)
 }
 
 export const db = {
   /* ── Tickets ── */
-  async createTicket(name, phone, email, ministry_id) {
+  async createTicket(name, phone, email, ministry_id, transfer_proof) {
     const { rows } = await pool.query(
-      `INSERT INTO tickets (name, phone, email, ministry_id) VALUES ($1, $2, $3, $4) RETURNING *`,
-      [name, phone, email, ministry_id || null]
+      `INSERT INTO tickets (name, phone, email, ministry_id, transfer_proof) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [name, phone, email, ministry_id || null, transfer_proof || null]
     )
     return rows[0]
   },

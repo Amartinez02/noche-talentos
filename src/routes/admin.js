@@ -27,7 +27,7 @@ export async function adminRoutes(fastify) {
   })
 
   // ─── API JSON para el escáner (requiere auth de admin) ───────────────────
-  fastify.post('/api/validar/:id', async (req, reply) => {
+  fastify.post('/api/validate/:id', async (req, reply) => {
     await requireAdmin(req, reply)
     if (reply.sent) return
 
@@ -45,7 +45,7 @@ export async function adminRoutes(fastify) {
   })
 
   // ─── API JSON para marcar como pagada ────────────────────────────────────
-  fastify.post('/api/pagar/:id', async (req, reply) => {
+  fastify.post('/api/pay/:id', async (req, reply) => {
     await requireAdmin(req, reply)
     if (reply.sent) return
 
@@ -54,7 +54,7 @@ export async function adminRoutes(fastify) {
     return reply.send({ status: 'ok', message: 'Boleta marcada como pagada.', ticket })
   })
 
-  fastify.post('/api/despagar/:id', async (req, reply) => {
+  fastify.post('/api/unpay/:id', async (req, reply) => {
     await requireAdmin(req, reply)
     if (reply.sent) return
 
@@ -63,7 +63,7 @@ export async function adminRoutes(fastify) {
     return reply.send({ status: 'ok', ticket })
   })
 
-  fastify.delete('/api/boleta/:id', async (req, reply) => {
+  fastify.delete('/api/ticket/:id', async (req, reply) => {
     await requireAdmin(req, reply)
     if (reply.sent) return
 
@@ -74,7 +74,7 @@ export async function adminRoutes(fastify) {
 
   // ─── Rutas protegidas del panel ───────────────────────────────────────────
   fastify.addHook('onRequest', async (req, reply) => {
-    const protectedPaths = ['/admin/dashboard', '/admin/boletas', '/admin/scanner']
+    const protectedPaths = ['/admin/dashboard', '/admin/tickets', '/admin/scanner']
     if (protectedPaths.some(p => req.url.startsWith(p))) {
       await requireAdmin(req, reply)
     }
@@ -91,7 +91,7 @@ export async function adminRoutes(fastify) {
     })
   })
 
-  fastify.get('/admin/boletas', async (req, reply) => {
+  fastify.get('/admin/tickets', async (req, reply) => {
     const tickets = await db.listTickets()
     const formatted = tickets.map(t => ({
       ...t,

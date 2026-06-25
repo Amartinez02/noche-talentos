@@ -13,7 +13,7 @@
     <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
     <div class="admin-nav-links">
       <a href="/admin/dashboard">Dashboard</a>
-      <a href="/admin/boletas">Boletas</a>
+      <a href="/admin/tickets">Boletas</a>
       <a href="/admin/scanner" class="active">Escáner</a>
       <div class="nav-sep"></div>
       <form method="POST" action="/admin/logout" style="display:inline">
@@ -73,7 +73,7 @@ async function onScanSuccess(decodedText) {
   scanning = false
   html5QrCode.pause()
 
-  // El QR ahora apunta a /boleta/:id
+  // El QR ahora apunta a /ticket/:id
   const match = decodedText.match(/\/boleta\/([0-9a-f-]{36})/i)
   // Compatibilidad con QRs viejos que apuntan a /admin/validar/:id
   const matchOld = decodedText.match(/\/admin\/validar\/([0-9a-f-]{36})/i)
@@ -82,7 +82,7 @@ async function onScanSuccess(decodedText) {
   currentTicketId = ticketId
 
   try {
-    const res  = await fetch(`/api/validar/${ticketId}`, { method: 'POST' })
+    const res  = await fetch(`/api/validate/${ticketId}`, { method: 'POST' })
     const data = await res.json()
     showResult(data)
   } catch (e) {
@@ -144,7 +144,7 @@ async function markPaid() {
   btn.disabled = true
   btn.textContent = 'Registrando…'
   try {
-    const res  = await fetch(`/api/pagar/${currentTicketId}`, { method: 'POST' })
+    const res  = await fetch(`/api/pay/${currentTicketId}`, { method: 'POST' })
     const data = await res.json()
     if (data.status === 'ok') {
       btn.textContent = '✓ Pagada registrada'

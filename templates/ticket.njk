@@ -208,7 +208,7 @@ async function downloadTicketJPG() {
     out.toBlob((blob) => {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url; a.download = 'boleta-noche-talentos.jpg'
+      a.href = url; a.download = 'ticket-noche-talentos.jpg'
       document.body.appendChild(a); a.click()
       document.body.removeChild(a); URL.revokeObjectURL(url)
     }, 'image/jpeg', 0.96)

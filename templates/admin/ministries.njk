@@ -9,9 +9,9 @@
     <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
     <div class="admin-nav-links">
       <a href="/admin/dashboard">Dashboard</a>
-      <a href="/admin/boletas">Boletas</a>
-      <a href="/admin/participantes">Participantes</a>
-      <a href="/admin/ministerios" class="active">Ministerios</a>
+      <a href="/admin/tickets">Boletas</a>
+      <a href="/admin/participants">Participantes</a>
+      <a href="/admin/ministries" class="active">Ministerios</a>
       <a href="/admin/scanner">Escáner</a>
       <div class="nav-sep"></div>
       <form method="POST" action="/admin/logout" style="display:inline">
@@ -30,7 +30,7 @@
 
       <div class="ministry-add-card">
         <h3 class="ministry-add-title">Agregar ministerio</h3>
-        <form method="POST" action="/admin/ministerios" class="ministry-add-form">
+        <form method="POST" action="/admin/ministries" class="ministry-add-form">
           <input type="text" name="name" placeholder="Ej: Ministerio Juventud VIVE" required
                  class="ministry-input" autocomplete="off">
           <button type="submit" class="btn-primary" style="white-space:nowrap">+ Agregar</button>
@@ -57,12 +57,12 @@
             <button class="btn-tiny btn-tiny-gold" onclick="saveEdit({{ m.id }})" id="mbtn-save-{{ m.id }}" style="display:none">Guardar</button>
             <button class="btn-tiny btn-tiny-outline" onclick="cancelEdit({{ m.id }})" id="mbtn-cancel-{{ m.id }}" style="display:none">Cancelar</button>
 
-            <form method="POST" action="/admin/ministerios/{{ m.id }}/toggle" style="display:inline">
+            <form method="POST" action="/admin/ministries/{{ m.id }}/toggle" style="display:inline">
               <button type="submit" class="btn-tiny {{ 'btn-tiny-outline' if m.active else 'btn-tiny-gold' }}" id="mbtn-toggle-{{ m.id }}">
                 {{ "Desactivar" if m.active else "Activar" }}
               </button>
             </form>
-            <form method="POST" action="/admin/ministerios/{{ m.id }}/eliminar" style="display:inline"
+            <form method="POST" action="/admin/ministries/{{ m.id }}/delete" style="display:inline"
                   onsubmit="return confirm('¿Eliminar «{{ m.name }}»?')">
               <button type="submit" class="btn-tiny btn-tiny-danger">Eliminar</button>
             </form>
@@ -87,7 +87,7 @@ if (listEl) {
     ghostClass: 'ministry-ghost',
     onEnd() {
       const ids = [...listEl.querySelectorAll('.ministry-row')].map(r => parseInt(r.dataset.id))
-      fetch('/admin/ministerios/reordenar', {
+      fetch('/admin/ministries/reorder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids })
@@ -126,7 +126,7 @@ async function saveEdit(id) {
   saveBtn.textContent = '…'
 
   try {
-    const res  = await fetch('/admin/ministerios/' + id, {
+    const res  = await fetch('/admin/ministries/' + id, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
