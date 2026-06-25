@@ -1,0 +1,71 @@
+{% extends "layout.njk" %}
+{% block title %}Participantes — Admin{% endblock %}
+
+{% block body %}
+<div class="page-admin">
+  <div class="grain"></div>
+
+  <nav class="admin-nav">
+    <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
+    <div class="admin-nav-links">
+      <a href="/admin/dashboard">Dashboard</a>
+      <a href="/admin/boletas">Boletas</a>
+      <a href="/admin/participantes" class="active">Participantes</a>
+      <a href="/admin/ministerios">Ministerios</a>
+      <a href="/admin/scanner">Escáner</a>
+      <div class="nav-sep"></div>
+      <form method="POST" action="/admin/logout" style="display:inline">
+        <button type="submit" class="nav-logout">Salir</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="admin-main">
+    <div class="admin-title-area" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+      <div>
+        <h2 class="admin-page-title">Participantes</h2>
+        <p class="admin-event-info">Talentos confirmados para la noche · {{ participants.length }} registrado{{ "s" if participants.length != 1 }}</p>
+      </div>
+      <a href="/admin/participantes/nuevo" class="btn-primary" style="margin-top:.25rem">+ Agregar participante</a>
+    </div>
+
+    {% if participants.length === 0 %}
+    <div class="empty-state">
+      <p>No hay participantes aún.</p>
+      <a href="/admin/participantes/nuevo" class="btn-secondary">Agregar el primero</a>
+    </div>
+    {% else %}
+    <div class="participants-admin-grid">
+      {% for p in participants %}
+      <div class="pa-card {{ 'pa-inactive' if not p.active }}">
+        <div class="pa-photo-wrap">
+          {% if p.photo_path %}
+            <img src="{{ p.photo_path }}" alt="{{ p.name }}" class="pa-photo">
+          {% else %}
+            <div class="pa-photo-placeholder">🎤</div>
+          {% endif %}
+          {% if not p.active %}
+            <span class="pa-hidden-badge">Oculto</span>
+          {% endif %}
+        </div>
+        <div class="pa-info">
+          <p class="pa-role">{{ p.role }}</p>
+          <h3 class="pa-name">{{ p.name }}</h3>
+          {% if p.description %}
+          <p class="pa-desc">{{ p.description }}</p>
+          {% endif %}
+          <p class="pa-order">Orden: {{ p.display_order }}</p>
+        </div>
+        <div class="pa-actions">
+          <a href="/admin/participantes/{{ p.id }}/editar" class="btn-tiny">Editar</a>
+          <form method="POST" action="/admin/participantes/{{ p.id }}/eliminar" onsubmit="return confirm('¿Eliminar a {{ p.name }}?')">
+            <button type="submit" class="btn-tiny btn-tiny-danger">Eliminar</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

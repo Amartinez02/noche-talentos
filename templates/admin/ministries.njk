@@ -1,0 +1,150 @@
+{% extends "layout.njk" %}
+{% block title %}Ministerios — Admin{% endblock %}
+
+{% block body %}
+<div class="page-admin">
+  <div class="grain"></div>
+
+  <nav class="admin-nav">
+    <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
+    <div class="admin-nav-links">
+      <a href="/admin/dashboard">Dashboard</a>
+      <a href="/admin/boletas">Boletas</a>
+      <a href="/admin/participantes">Participantes</a>
+      <a href="/admin/ministerios" class="active">Ministerios</a>
+      <a href="/admin/scanner">Escáner</a>
+      <div class="nav-sep"></div>
+      <form method="POST" action="/admin/logout" style="display:inline">
+        <button type="submit" class="nav-logout">Salir</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="admin-main">
+    <div class="admin-title-area">
+      <h2 class="admin-page-title">Ministerios / Iglesias</h2>
+      <p class="admin-event-info">Opciones disponibles en el formulario de registro · {{ ministries.length }} registrado{{ "s" if ministries.length != 1 }}</p>
+    </div>
+
+    <div class="ministry-layout">
+
+      <div class="ministry-add-card">
+        <h3 class="ministry-add-title">Agregar ministerio</h3>
+        <form method="POST" action="/admin/ministerios" class="ministry-add-form">
+          <input type="text" name="name" placeholder="Ej: Ministerio Juventud VIVE" required
+                 class="ministry-input" autocomplete="off">
+          <button type="submit" class="btn-primary" style="white-space:nowrap">+ Agregar</button>
+        </form>
+      </div>
+
+      {% if ministries.length === 0 %}
+      <div class="empty-state">
+        <p>No hay ministerios registrados aún.</p>
+      </div>
+      {% else %}
+      <p class="ministry-drag-hint">Arrastra las filas para cambiar el orden.</p>
+      <div class="ministry-list" id="ministry-sortable">
+        {% for m in ministries %}
+        <div class="ministry-row {{ 'ministry-inactive' if not m.active }}" data-id="{{ m.id }}">
+          <span class="ministry-handle" title="Arrastrar">⠿</span>
+
+          <span class="ministry-name" id="mname-{{ m.id }}">{{ m.name }}</span>
+          <input class="ministry-edit-input ministry-input" id="medit-{{ m.id }}"
+                 value="{{ m.name }}" style="display:none;flex:1">
+
+          <div class="ministry-actions">
+            <button class="btn-tiny" onclick="startEdit({{ m.id }})" id="mbtn-edit-{{ m.id }}">Editar</button>
+            <button class="btn-tiny btn-tiny-gold" onclick="saveEdit({{ m.id }})" id="mbtn-save-{{ m.id }}" style="display:none">Guardar</button>
+            <button class="btn-tiny btn-tiny-outline" onclick="cancelEdit({{ m.id }})" id="mbtn-cancel-{{ m.id }}" style="display:none">Cancelar</button>
+
+            <form method="POST" action="/admin/ministerios/{{ m.id }}/toggle" style="display:inline">
+              <button type="submit" class="btn-tiny {{ 'btn-tiny-outline' if m.active else 'btn-tiny-gold' }}" id="mbtn-toggle-{{ m.id }}">
+                {{ "Desactivar" if m.active else "Activar" }}
+              </button>
+            </form>
+            <form method="POST" action="/admin/ministerios/{{ m.id }}/eliminar" style="display:inline"
+                  onsubmit="return confirm('¿Eliminar «{{ m.name }}»?')">
+              <button type="submit" class="btn-tiny btn-tiny-danger">Eliminar</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script>
+// ── Drag & drop ─────────────────────────────────────────────────────────────
+const listEl = document.getElementById('ministry-sortable')
+if (listEl) {
+  Sortable.create(listEl, {
+    handle: '.ministry-handle',
+    animation: 150,
+    ghostClass: 'ministry-ghost',
+    onEnd() {
+      const ids = [...listEl.querySelectorAll('.ministry-row')].map(r => parseInt(r.dataset.id))
+      fetch('/admin/ministerios/reordenar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+      })
+    }
+  })
+}
+
+// ── Edición inline ───────────────────────────────────────────────────────────
+function startEdit(id) {
+  document.getElementById('mname-' + id).style.display = 'none'
+  document.getElementById('medit-' + id).style.display = 'flex'
+  document.getElementById('medit-' + id).focus()
+  document.getElementById('mbtn-edit-' + id).style.display = 'none'
+  document.getElementById('mbtn-save-' + id).style.display = 'inline-flex'
+  document.getElementById('mbtn-cancel-' + id).style.display = 'inline-flex'
+}
+
+function cancelEdit(id) {
+  const nameEl = document.getElementById('mname-' + id)
+  document.getElementById('medit-' + id).value = nameEl.textContent.trim()
+  document.getElementById('medit-' + id).style.display = 'none'
+  nameEl.style.display = 'inline'
+  document.getElementById('mbtn-edit-' + id).style.display = 'inline-flex'
+  document.getElementById('mbtn-save-' + id).style.display = 'none'
+  document.getElementById('mbtn-cancel-' + id).style.display = 'none'
+}
+
+async function saveEdit(id) {
+  const input = document.getElementById('medit-' + id)
+  const name  = input.value.trim()
+  if (!name) return
+
+  const saveBtn = document.getElementById('mbtn-save-' + id)
+  saveBtn.disabled = true
+  saveBtn.textContent = '…'
+
+  try {
+    const res  = await fetch('/admin/ministerios/' + id, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    })
+    const data = await res.json()
+    if (data.status === 'ok') {
+      document.getElementById('mname-' + id).textContent = data.ministry.name
+      cancelEdit(id)
+    } else {
+      alert('Error al guardar')
+      saveBtn.disabled = false
+      saveBtn.textContent = 'Guardar'
+    }
+  } catch {
+    alert('Error de conexión')
+    saveBtn.disabled = false
+    saveBtn.textContent = 'Guardar'
+  }
+}
+</script>
+{% endblock %}

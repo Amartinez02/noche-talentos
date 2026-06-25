@@ -1,0 +1,62 @@
+{% extends "layout.njk" %}
+{% block title %}Comprar Boleta — Noche de Talentos VIVE{% endblock %}
+
+{% block body %}
+<div class="page-form">
+  <div class="grain"></div>
+
+  <div class="form-container">
+    <a href="/" class="back-link">← Volver al inicio</a>
+
+    <div class="form-event-banner">
+      <div>
+        <div class="feb-title">
+          <span>NOCHE DE TALENTOS</span>
+          VIVE
+        </div>
+      </div>
+      <div class="feb-meta">
+        <span class="feb-date">25 JUL 2026 · 7:30 PM</span>
+        <strong class="feb-price">RD$ 300</strong>
+        <span class="feb-pp">por persona</span>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h2>Registra tus datos</h2>
+      <p class="form-desc">Recibirás una boleta digital con código QR único para presentar en la entrada del evento.</p>
+
+      {% if error %}
+      <div class="alert-error">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="/comprar">
+        <div class="field">
+          <label for="name">Nombre completo</label>
+          <input type="text" id="name" name="name" placeholder="Ej: María García" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="phone">Teléfono</label>
+          <input type="tel" id="phone" name="phone" placeholder="Ej: 809-555-0123" required autocomplete="tel">
+        </div>
+        <div class="field">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" name="email" placeholder="Ej: maria@ejemplo.com" required autocomplete="email">
+        </div>
+        {% if ministries and ministries.length > 0 %}
+        <div class="field">
+          <label for="ministry_id">Ministerio / Iglesia que te invita</label>
+          <select id="ministry_id" name="ministry_id">
+            <option value="">— Selecciona una opción —</option>
+            {% for m in ministries %}
+            <option value="{{ m.id }}">{{ m.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <button type="submit" class="btn-submit">OBTENER MI BOLETA →</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

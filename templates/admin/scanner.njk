@@ -1,0 +1,172 @@
+{% extends "layout.njk" %}
+{% block title %}Escáner QR — Admin{% endblock %}
+
+{% block head %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="page-admin">
+  <div class="grain"></div>
+
+  <nav class="admin-nav">
+    <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
+    <div class="admin-nav-links">
+      <a href="/admin/dashboard">Dashboard</a>
+      <a href="/admin/boletas">Boletas</a>
+      <a href="/admin/scanner" class="active">Escáner</a>
+      <div class="nav-sep"></div>
+      <form method="POST" action="/admin/logout" style="display:inline">
+        <button type="submit" class="nav-logout">Salir</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="admin-main scanner-main">
+    <div class="admin-title-area">
+      <h2 class="admin-page-title">Escáner de Boletas</h2>
+      <p class="admin-event-info">Apunta la cámara al QR — la boleta se valida automáticamente</p>
+    </div>
+
+    <div class="scanner-wrapper">
+      <div id="qr-reader"></div>
+
+      <div id="scanner-result" class="scanner-result hidden">
+        <div id="result-icon" class="result-icon"></div>
+        <h3 id="result-title"></h3>
+        <p id="result-name" style="font-size:1.1rem;font-weight:600;color:var(--text-dark);margin-bottom:.25rem"></p>
+        <p id="result-message"></p>
+
+        <div id="pay-section" class="pay-section hidden">
+          <button id="btn-pay" class="btn-pay" onclick="markPaid()">
+            💳 Marcar como pagada
+          </button>
+        </div>
+
+        <button class="btn-primary" style="margin-top:1.5rem" onclick="resetScanner()">
+          Escanear otra boleta
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+let html5QrCode
+let scanning = true
+let currentTicketId = null
+
+function startScanner() {
+  html5QrCode = new Html5Qrcode('qr-reader')
+  html5QrCode.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 280, height: 280 } },
+    onScanSuccess
+  ).catch(() => {
+    document.getElementById('qr-reader').innerHTML =
+      '<p class="scanner-error">No se pudo acceder a la cámara.<br>Verifica los permisos del navegador.</p>'
+  })
+}
+
+async function onScanSuccess(decodedText) {
+  if (!scanning) return
+  scanning = false
+  html5QrCode.pause()
+
+  // El QR ahora apunta a /boleta/:id
+  const match = decodedText.match(/\/boleta\/([0-9a-f-]{36})/i)
+  // Compatibilidad con QRs viejos que apuntan a /admin/validar/:id
+  const matchOld = decodedText.match(/\/admin\/validar\/([0-9a-f-]{36})/i)
+  const ticketId = (match || matchOld)?.[1] || decodedText.trim()
+
+  currentTicketId = ticketId
+
+  try {
+    const res  = await fetch(`/api/validar/${ticketId}`, { method: 'POST' })
+    const data = await res.json()
+    showResult(data)
+  } catch (e) {
+    showResult({ status: 'error', message: 'Error de conexión. Intenta de nuevo.' })
+  }
+}
+
+function showResult(data) {
+  document.getElementById('qr-reader').classList.add('hidden')
+  const result = document.getElementById('scanner-result')
+  result.classList.remove('hidden', 'result-ok', 'result-warn', 'result-error')
+
+  const icon    = document.getElementById('result-icon')
+  const title   = document.getElementById('result-title')
+  const nameEl  = document.getElementById('result-name')
+  const msg     = document.getElementById('result-message')
+  const paySec  = document.getElementById('pay-section')
+  const btnPay  = document.getElementById('btn-pay')
+
+  paySec.classList.add('hidden')
+
+  if (data.status === 'ok') {
+    result.classList.add('result-ok')
+    icon.textContent  = '✓'
+    title.textContent = '¡BOLETA VÁLIDA!'
+    nameEl.textContent = data.name || ''
+    msg.textContent   = 'Entrada al evento confirmada.'
+    if (!data.is_paid) {
+      paySec.classList.remove('hidden')
+      btnPay.textContent = '💳 Marcar como pagada'
+      btnPay.disabled = false
+    }
+  } else if (data.status === 'already_used') {
+    result.classList.add('result-warn')
+    icon.textContent  = '⚠'
+    title.textContent = 'YA FUE VALIDADA'
+    nameEl.textContent = data.name || ''
+    const validatedAt = data.validated_at
+      ? new Date(data.validated_at).toLocaleString('es-DO', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+      : ''
+    msg.textContent = validatedAt ? `Validada el ${validatedAt}` : 'Esta boleta ya fue usada.'
+    if (!data.is_paid) {
+      paySec.classList.remove('hidden')
+      btnPay.textContent = '💳 Marcar como pagada'
+      btnPay.disabled = false
+    }
+  } else {
+    result.classList.add('result-error')
+    icon.textContent  = '✕'
+    title.textContent = 'BOLETA INVÁLIDA'
+    nameEl.textContent = ''
+    msg.textContent   = data.message || 'No se encontró esta boleta.'
+  }
+}
+
+async function markPaid() {
+  if (!currentTicketId) return
+  const btn = document.getElementById('btn-pay')
+  btn.disabled = true
+  btn.textContent = 'Registrando…'
+  try {
+    const res  = await fetch(`/api/pagar/${currentTicketId}`, { method: 'POST' })
+    const data = await res.json()
+    if (data.status === 'ok') {
+      btn.textContent = '✓ Pagada registrada'
+      btn.style.background = '#16a34a'
+    } else {
+      btn.textContent = 'Error — intenta de nuevo'
+      btn.disabled = false
+    }
+  } catch (e) {
+    btn.textContent = 'Error de conexión'
+    btn.disabled = false
+  }
+}
+
+function resetScanner() {
+  currentTicketId = null
+  document.getElementById('qr-reader').classList.remove('hidden')
+  document.getElementById('scanner-result').classList.add('hidden')
+  scanning = true
+  html5QrCode.resume()
+}
+
+document.addEventListener('DOMContentLoaded', startScanner)
+</script>
+{% endblock %}

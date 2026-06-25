@@ -1,0 +1,21 @@
+{
+  "name": "noche-talentos",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^9.4.0",
+    "@fastify/formbody": "^7.4.0",
+    "@fastify/multipart": "^8.3.1",
+    "@fastify/static": "^7.0.4",
+    "@fastify/view": "^9.1.0",
+    "fastify": "^4.28.1",
+    "nunjucks": "^3.2.4",
+    "pg": "^8.13.1",
+    "qrcode": "^1.5.4",
+    "uuid": "^10.0.0"
+  }
+}

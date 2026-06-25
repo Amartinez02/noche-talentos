@@ -1,0 +1,179 @@
+{% extends "layout.njk" %}
+{% block title %}Noche de Talentos VIVE — Boletas{% endblock %}
+
+{% block body %}
+<div class="page-home">
+  {# ══════════════ HEADER MÓVIL ══════════════ #}
+  <header class="mobile-header">
+    <img src="/static/img/vive-logo.png" alt="VIVE" class="mobile-header-logo">
+    <div class="mobile-header-text">
+      <span class="mobile-header-label">NOCHE DE TALENTOS</span>
+      <span class="mobile-header-date">25 JUL 2026 · 7:30 PM</span>
+    </div>
+  </header>
+
+  <div class="grain"></div>
+
+  {# ══════════════ COLUMNA IZQUIERDA — evento ══════════════ #}
+  <section class="home-left">
+    <div class="hero-tag-bar">
+      <span class="hero-tag">Casa de Bendición · Iglesia ACyM</span>
+    </div>
+
+    <div class="hero-grid">
+
+      <div class="hcard hcard-mic">
+        <svg class="icon-retro" viewBox="0 0 64 64" fill="none"><rect x="24" y="6" width="16" height="26" rx="8" fill="#5C1010" stroke="#5C1010" stroke-width="2"/><rect x="28" y="10" width="8" height="4" rx="2" fill="#F0A500" opacity=".6"/><rect x="28" y="16" width="8" height="4" rx="2" fill="#F0A500" opacity=".6"/><path d="M16 30c0 8.837 7.163 16 16 16s16-7.163 16-16" stroke="#5C1010" stroke-width="3" stroke-linecap="round"/><line x1="32" y1="46" x2="32" y2="56" stroke="#5C1010" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="56" x2="42" y2="56" stroke="#5C1010" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+
+      <div class="hcard hcard-title">
+        <p class="ev-label">NOCHE DE TALENTOS</p>
+        <img src="/static/img/vive-logo.png" alt="VIVE" class="ev-vive-logo">
+        <p class="ev-sub">Viviendo el Evangelio</p>
+      </div>
+
+      <div class="hcard hcard-tape">
+        <svg class="icon-retro" viewBox="0 0 64 64" fill="none"><rect x="8" y="16" width="48" height="32" rx="4" fill="#F6EDD8" stroke="#5C1010" stroke-width="2.5"/><rect x="14" y="22" width="36" height="20" rx="2" fill="#E8D5A8"/><circle cx="22" cy="36" r="6" fill="#5C1010"/><circle cx="22" cy="36" r="3" fill="#F0A500"/><circle cx="42" cy="36" r="6" fill="#5C1010"/><circle cx="42" cy="36" r="3" fill="#F0A500"/><rect x="26" y="34" width="12" height="4" rx="2" fill="#5C1010"/><line x1="14" y1="28" x2="50" y2="28" stroke="#5C1010" stroke-width="1.5" opacity=".4"/></svg>
+      </div>
+
+      <div class="hcard hcard-boom">
+        <svg class="icon-retro" viewBox="0 0 64 64" fill="none"><rect x="6" y="18" width="52" height="30" rx="5" fill="#F6EDD8" stroke="#5C1010" stroke-width="2.5"/><circle cx="18" cy="34" r="9" fill="#5C1010"/><circle cx="18" cy="34" r="5" fill="#F0A500"/><circle cx="18" cy="34" r="2" fill="#5C1010"/><circle cx="46" cy="34" r="9" fill="#5C1010"/><circle cx="46" cy="34" r="5" fill="#F0A500"/><circle cx="46" cy="34" r="2" fill="#5C1010"/><rect x="28" y="22" width="8" height="5" rx="2" fill="#5C1010" opacity=".5"/><rect x="28" y="29" width="8" height="3" rx="1.5" fill="#5C1010" opacity=".3"/><line x1="6" y1="18" x2="10" y2="10" stroke="#5C1010" stroke-width="2.5" stroke-linecap="round"/><line x1="58" y1="18" x2="54" y2="10" stroke="#5C1010" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+
+      <div class="hcard hcard-head">
+        <svg class="icon-retro" viewBox="0 0 64 64" fill="none"><path d="M10 34c0-12.15 9.85-22 22-22s22 9.85 22 22" stroke="#7B1717" stroke-width="3.5" stroke-linecap="round"/><rect x="6" y="32" width="12" height="18" rx="6" fill="#7B1717"/><rect x="46" y="32" width="12" height="18" rx="6" fill="#7B1717"/><rect x="8" y="36" width="8" height="10" rx="4" fill="#F0A500"/><rect x="48" y="36" width="8" height="10" rx="4" fill="#F0A500"/></svg>
+      </div>
+
+      <div class="hcard hcard-date">
+        <p class="d-day">25</p>
+        <p class="d-month">JULIO</p>
+        <p class="d-year">2026</p>
+        <p class="d-time">7:30 P.M.</p>
+      </div>
+
+      <div class="hcard hcard-loc">
+        <h3>CASA DE BENDICIÓN</h3>
+        <p>C/ Caonabo esq. 1ra, Los Restauradores,<br>Iglesia ACyM, Casa de Bendición.</p>
+      </div>
+
+      <div class="hcard hcard-price">
+        <div class="price-stub">
+          <span class="p-stars">★ ★ ★</span>
+          <span class="p-rdS">RD$</span>
+          <span class="p-amt">300</span>
+          <span class="p-pp">P/P</span>
+          <span class="p-stars">★ ★ ★</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hero-cta">
+      <a href="/comprar" class="btn-primary">🎟 OBTÉN TU BOLETA DIGITAL</a>
+    </div>
+
+    <p class="footer-slogan">no te lo pierdas</p>
+  </section>
+
+  {# ══════════════ COLUMNA DERECHA — participantes ══════════════ #}
+  <section class="home-right">
+    <div class="participants-panel">
+      <div class="participants-header">
+        <div class="participants-title-line"></div>
+        <h2 class="participants-title">Participantes<br><span>confirmados</span></h2>
+        <div class="participants-title-line"></div>
+      </div>
+
+      {% if participants and participants.length > 0 %}
+      <div class="carousel" id="carousel">
+        <div class="carousel-track" id="carousel-track">
+          {% for p in participants %}
+          <div class="participant-card">
+            <div class="pc-header">
+              <span class="pc-role-badge">{{ p.role }}</span>
+              {% if participants.length > 1 %}
+              <span class="pc-counter">{{ loop.index }} / {{ participants.length }}</span>
+              {% endif %}
+            </div>
+            <div class="pc-photo-wrap">
+              {% if p.photo_path %}
+                <img src="{{ p.photo_path }}" alt="{{ p.name }}" class="pc-photo">
+              {% else %}
+                <div class="pc-photo-placeholder">
+                  <svg width="52" height="52" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="18" r="10" fill="#F6EDD8" opacity=".3"/><path d="M6 42c0-9.941 8.059-18 18-18s18 8.059 18 18" fill="#F6EDD8" opacity=".2"/></svg>
+                </div>
+              {% endif %}
+            </div>
+            <div class="pc-info">
+              <h3 class="pc-name">{{ p.name }}</h3>
+              {% if p.description %}
+                <p class="pc-desc">{{ p.description }}</p>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if participants.length > 1 %}
+      <div class="carousel-nav">
+        <button class="carousel-btn carousel-prev" onclick="carouselMove(-1)" aria-label="Anterior">&#8249;</button>
+        <div class="carousel-dots" id="carousel-dots">
+          {% for p in participants %}
+          <button class="dot {{ 'dot-active' if loop.first }}" onclick="carouselGo({{ loop.index0 }})"></button>
+          {% endfor %}
+        </div>
+        <button class="carousel-btn carousel-next" onclick="carouselMove(1)" aria-label="Siguiente">&#8250;</button>
+      </div>
+      {% endif %}
+
+      <p class="participants-count">
+        {{ participants.length }} talento{{ "s" if participants.length != 1 }} en escena esta noche
+      </p>
+
+      {% else %}
+      <div class="participants-empty">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="56" r="28" fill="#7B1717" opacity=".06"/><text x="28" y="38" text-anchor="middle" font-size="32">🎤</text></svg>
+        <p>Los participantes se anunciarán próximamente.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function() {
+  const carousel = document.getElementById('carousel')
+  const track    = document.getElementById('carousel-track')
+  const dots     = document.querySelectorAll('.dot')
+  if (!track || dots.length === 0) return
+
+  let current   = 0
+  const total   = dots.length
+  let autoTimer = null
+
+  function setWidths() {
+    const w = carousel.offsetWidth
+    document.querySelectorAll('.participant-card').forEach(c => c.style.width = w + 'px')
+  }
+
+  function go(idx) {
+    current = (idx + total) % total
+    track.style.transform = `translateX(-${current * carousel.offsetWidth}px)`
+    dots.forEach((d, i) => d.classList.toggle('dot-active', i === current))
+  }
+
+  window.carouselMove = (dir) => { clearInterval(autoTimer); go(current + dir); startAuto() }
+  window.carouselGo   = (idx) => { clearInterval(autoTimer); go(idx); startAuto() }
+
+  function startAuto() {
+    autoTimer = setInterval(() => go(current + 1), 4500)
+  }
+
+  window.addEventListener('resize', () => { setWidths(); go(current) })
+  setWidths()
+  startAuto()
+})()
+</script>
+{% endblock %}

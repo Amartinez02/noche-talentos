@@ -1,0 +1,139 @@
+{% extends "layout.njk" %}
+{% block title %}Boletas — Admin{% endblock %}
+
+{% block body %}
+<div class="page-admin">
+  <div class="grain"></div>
+
+  <nav class="admin-nav">
+    <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
+    <div class="admin-nav-links">
+      <a href="/admin/dashboard">Dashboard</a>
+      <a href="/admin/boletas" class="active">Boletas</a>
+      <a href="/admin/participantes">Participantes</a>
+      <a href="/admin/ministerios">Ministerios</a>
+      <a href="/admin/scanner">Escáner</a>
+      <div class="nav-sep"></div>
+      <form method="POST" action="/admin/logout" style="display:inline">
+        <button type="submit" class="nav-logout">Salir</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="admin-main">
+    <div class="admin-title-area">
+      <h2 class="admin-page-title">Boletas vendidas</h2>
+      <p class="admin-event-info">Noche de Talentos · 25 Julio 2026</p>
+    </div>
+
+    {% if tickets.length === 0 %}
+    <div class="empty-state">
+      <p>Aún no hay boletas vendidas.</p>
+      <a href="/" class="btn-secondary" target="_blank">Ir a la página de venta</a>
+    </div>
+    {% else %}
+    <div class="table-wrapper">
+      <table class="tickets-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th>Ministerio / Iglesia</th>
+            <th>Emitida</th>
+            <th>Validada</th>
+            <th>Pago</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tickets %}
+          <tr class="{{ 'row-validated' if t.validated_at }}">
+            <td class="td-name" data-label="Nombre">{{ t.name }}</td>
+            <td data-label="Teléfono">{{ t.phone }}</td>
+            <td data-label="Correo">{{ t.email }}</td>
+            <td data-label="Ministerio">{{ t.ministry_name or "—" }}</td>
+            <td data-label="Emitida">{{ t.created_fmt }}</td>
+            <td data-label="Validada">
+              {% if t.validated_at %}
+                <span class="badge badge-ok">✓ {{ t.validated_fmt }}</span>
+              {% else %}
+                <span class="badge badge-pending">Pendiente</span>
+              {% endif %}
+            </td>
+            <td data-label="Pago">
+              {% if t.is_paid %}
+                <span class="badge badge-paid">💳 Pagada</span>
+              {% else %}
+                <span class="badge badge-unpaid">Sin pagar</span>
+              {% endif %}
+            </td>
+            <td class="td-actions" data-label="Acciones">
+              <a href="/boleta/{{ t.id }}" target="_blank" class="btn-icon btn-icon-maroon" title="Ver boleta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </a>
+              {% if t.is_paid %}
+                <button class="btn-icon btn-icon-outline" title="Desmarcar pago" onclick="togglePago('{{ t.id }}', false, this)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              {% else %}
+                <button class="btn-icon btn-icon-gold" title="Marcar como pagada" onclick="togglePago('{{ t.id }}', true, this)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              {% endif %}
+              <button class="btn-icon btn-icon-danger" title="Eliminar boleta" onclick="eliminarBoleta('{{ t.id }}', '{{ t.name }}', this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </main>
+</div>
+
+<script>
+async function eliminarBoleta(id, nombre, btn) {
+  if (!confirm(`¿Eliminar la boleta de "${nombre}"? Esta acción no se puede deshacer.`)) return
+  btn.disabled = true
+  btn.textContent = '…'
+  try {
+    const res = await fetch(`/api/boleta/${id}`, { method: 'DELETE' })
+    const data = await res.json()
+    if (data.status === 'ok') {
+      btn.closest('tr').remove()
+    } else {
+      btn.disabled = false
+      btn.textContent = 'Eliminar'
+      alert('Error al eliminar la boleta.')
+    }
+  } catch (e) {
+    btn.disabled = false
+    btn.textContent = 'Eliminar'
+    alert('Error de conexión.')
+  }
+}
+
+async function togglePago(id, pagar, btn) {
+  btn.disabled = true
+  btn.textContent = '…'
+  try {
+    const endpoint = pagar ? `/api/pagar/${id}` : `/api/despagar/${id}`
+    const res  = await fetch(endpoint, { method: 'POST' })
+    const data = await res.json()
+    if (data.status === 'ok') {
+      // Recargar la fila actualizando la página
+      location.reload()
+    } else {
+      btn.disabled = false
+      btn.textContent = 'Error'
+    }
+  } catch (e) {
+    btn.disabled = false
+    btn.textContent = 'Error'
+  }
+}
+</script>
+{% endblock %}

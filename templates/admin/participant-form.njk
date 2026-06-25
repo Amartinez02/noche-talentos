@@ -1,0 +1,119 @@
+{% extends "layout.njk" %}
+{% block title %}{{ "Editar" if p else "Nuevo" }} Participante — Admin{% endblock %}
+
+{% block body %}
+<div class="page-admin">
+  <div class="grain"></div>
+
+  <nav class="admin-nav">
+    <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
+    <div class="admin-nav-links">
+      <a href="/admin/dashboard">Dashboard</a>
+      <a href="/admin/boletas">Boletas</a>
+      <a href="/admin/participantes" class="active">Participantes</a>
+      <a href="/admin/ministerios">Ministerios</a>
+      <a href="/admin/scanner">Escáner</a>
+      <div class="nav-sep"></div>
+      <form method="POST" action="/admin/logout" style="display:inline">
+        <button type="submit" class="nav-logout">Salir</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="admin-main">
+    <div class="admin-title-area">
+      <a href="/admin/participantes" class="back-link" style="margin-bottom:.75rem;display:inline-flex">← Volver a participantes</a>
+      <h2 class="admin-page-title">{{ "Editar participante" if p else "Nuevo participante" }}</h2>
+    </div>
+
+    {% if error %}
+    <div class="alert-error" style="max-width:560px;margin-bottom:1.5rem">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST"
+          action="{{ '/admin/participantes/' + p.id if p else '/admin/participantes' }}"
+          enctype="multipart/form-data"
+          class="participant-form">
+
+      <div class="pf-row">
+        {# Foto #}
+        <div class="pf-photo-col">
+          <div class="pf-photo-preview" id="photo-preview">
+            {% if p and p.photo_path %}
+              <img src="{{ p.photo_path }}" alt="{{ p.name }}" id="preview-img">
+            {% else %}
+              <div class="pf-photo-placeholder" id="preview-placeholder">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="18" r="10" fill="#7B1717" opacity=".3"/><path d="M6 42c0-9.941 8.059-18 18-18s18 8.059 18 18" fill="#7B1717" opacity=".2"/></svg>
+                <span>Sin foto</span>
+              </div>
+              <img src="" alt="" id="preview-img" style="display:none">
+            {% endif %}
+          </div>
+          <label class="pf-upload-btn" for="photo">
+            📷 {{ "Cambiar foto" if p and p.photo_path else "Subir foto" }}
+          </label>
+          <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp"
+                 style="display:none" onchange="previewPhoto(this)">
+          <p style="font-size:.72rem;color:var(--gray);margin-top:.4rem;text-align:center">JPG, PNG o WebP · máx. 5 MB</p>
+        </div>
+
+        {# Campos #}
+        <div class="pf-fields-col">
+          <div class="field">
+            <label for="name">Nombre completo *</label>
+            <input type="text" id="name" name="name" required
+                   value="{{ p.name if p else '' }}" placeholder="Ej: Richard Cejas">
+          </div>
+          <div class="field">
+            <label for="role">Categoría / Talento *</label>
+            <input type="text" id="role" name="role" required
+                   value="{{ p.role if p else '' }}" placeholder="Ej: Rap, Stand Up Comedy, Adoración...">
+          </div>
+          <div class="field">
+            <label for="description">Descripción breve</label>
+            <textarea id="description" name="description" rows="3"
+                      placeholder="Una línea sobre su participación (opcional)">{{ p.description if p and p.description else '' }}</textarea>
+          </div>
+          <div class="pf-row-inline">
+            <div class="field" style="flex:0 0 120px">
+              <label for="display_order">Orden</label>
+              <input type="number" id="display_order" name="display_order" min="0"
+                     value="{{ p.display_order if p else 0 }}">
+            </div>
+            <div class="field pf-checkbox-field">
+              <label class="pf-check-label">
+                <input type="checkbox" name="active" id="active"
+                       {{ "checked" if not p or p.active }}>
+                <span>Visible en la página principal</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pf-submit-row">
+        <button type="submit" class="btn-submit" style="max-width:240px">
+          {{ "Guardar cambios" if p else "Agregar participante" }}
+        </button>
+        <a href="/admin/participantes" class="btn-outline">Cancelar</a>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script>
+function previewPhoto(input) {
+  const img  = document.getElementById('preview-img')
+  const ph   = document.getElementById('preview-placeholder')
+  if (input.files && input.files[0]) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      img.src = e.target.result
+      img.style.display = 'block'
+      if (ph) ph.style.display = 'none'
+    }
+    reader.readAsDataURL(input.files[0])
+  }
+}
+</script>
+{% endblock %}

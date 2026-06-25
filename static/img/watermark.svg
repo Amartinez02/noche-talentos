@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+
+  <!-- ♪ nota negra — arriba izquierda -->
+  <g transform="translate(28, 52) rotate(-14)" opacity="0.065">
+    <ellipse cx="0" cy="0" rx="9" ry="6.5" fill="#7B1717" transform="rotate(-15)"/>
+    <line x1="9" y1="-2" x2="9" y2="-42" stroke="#7B1717" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M9 -42 Q34 -50 32 -32" fill="#7B1717"/>
+  </g>
+
+  <!-- ♫ doble nota — arriba derecha -->
+  <g transform="translate(210, 28) rotate(9)" opacity="0.055">
+    <ellipse cx="0" cy="0" rx="8" ry="5.5" fill="#7B1717" transform="rotate(-15)"/>
+    <line x1="8" y1="-1.5" x2="8" y2="-34" stroke="#7B1717" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="24" cy="-6" rx="8" ry="5.5" fill="#7B1717" transform="rotate(-15 24 -6)"/>
+    <line x1="32" y1="-7.5" x2="32" y2="-34" stroke="#7B1717" stroke-width="3" stroke-linecap="round"/>
+    <line x1="8" y1="-34" x2="32" y2="-34" stroke="#7B1717" stroke-width="3.5" stroke-linecap="square"/>
+  </g>
+
+  <!-- Micrófono — centro derecha -->
+  <g transform="translate(262, 112) rotate(-8) scale(1.1)" opacity="0.05">
+    <rect x="-10" y="-28" width="20" height="32" rx="10" fill="#7B1717"/>
+    <rect x="-6" y="-24" width="4" height="5" rx="2" fill="#C97B0A" opacity="0.7"/>
+    <rect x="-6" y="-16" width="4" height="5" rx="2" fill="#C97B0A" opacity="0.7"/>
+    <path d="M-16 2 Q-16 18 0 18 Q16 18 16 2" stroke="#7B1717" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <line x1="0" y1="18" x2="0" y2="30" stroke="#7B1717" stroke-width="3" stroke-linecap="round"/>
+    <line x1="-10" y1="30" x2="10" y2="30" stroke="#7B1717" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- ♩ nota sola — izquierda centro -->
+  <g transform="translate(52, 185) rotate(13)" opacity="0.06">
+    <ellipse cx="0" cy="0" rx="9" ry="6.5" fill="#C97B0A" transform="rotate(-15)"/>
+    <line x1="9" y1="-2" x2="9" y2="-44" stroke="#C97B0A" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Audífonos — centro -->
+  <g transform="translate(155, 158) scale(1.05)" opacity="0.048">
+    <path d="M-28 0 Q-28 -36 0 -36 Q28 -36 28 0" stroke="#7B1717" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <rect x="-34" y="-6" width="13" height="22" rx="6.5" fill="#7B1717"/>
+    <rect x="21" y="-6" width="13" height="22" rx="6.5" fill="#7B1717"/>
+    <rect x="-30" y="-2" width="6" height="14" rx="3" fill="#C97B0A" opacity="0.6"/>
+    <rect x="24" y="-2" width="6" height="14" rx="3" fill="#C97B0A" opacity="0.6"/>
+  </g>
+
+  <!-- Casete — abajo izquierda -->
+  <g transform="translate(52, 268) rotate(-6)" opacity="0.05">
+    <rect x="-36" y="-22" width="72" height="44" rx="5" fill="#7B1717"/>
+    <rect x="-28" y="-16" width="56" height="32" rx="3" fill="#C97B0A" opacity="0.25"/>
+    <circle cx="-14" cy="4" r="9" stroke="#7B1717" stroke-width="2.5" fill="#C97B0A" opacity="0.4"/>
+    <circle cx="-14" cy="4" r="4" fill="#7B1717" opacity="0.5"/>
+    <circle cx="14" cy="4" r="9" stroke="#7B1717" stroke-width="2.5" fill="#C97B0A" opacity="0.4"/>
+    <circle cx="14" cy="4" r="4" fill="#7B1717" opacity="0.5"/>
+    <rect x="-4" y="-2" width="8" height="12" rx="2" fill="#7B1717" opacity="0.4"/>
+  </g>
+
+  <!-- ♬ cuatro semicorcheas — abajo derecha -->
+  <g transform="translate(248, 262) rotate(-11)" opacity="0.058">
+    <ellipse cx="0" cy="0" rx="8" ry="5.5" fill="#7B1717" transform="rotate(-15)"/>
+    <line x1="8" y1="-1.5" x2="8" y2="-36" stroke="#7B1717" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="22" cy="-5" rx="8" ry="5.5" fill="#7B1717" transform="rotate(-15 22 -5)"/>
+    <line x1="30" y1="-6.5" x2="30" y2="-36" stroke="#7B1717" stroke-width="3" stroke-linecap="round"/>
+    <line x1="8" y1="-36" x2="30" y2="-36" stroke="#7B1717" stroke-width="3.5" stroke-linecap="square"/>
+    <line x1="8" y1="-28" x2="30" y2="-28" stroke="#7B1717" stroke-width="2.5" stroke-linecap="square"/>
+  </g>
+
+  <!-- ♪ pequeña — esquina inferior izquierda del tile -->
+  <g transform="translate(0, 310) rotate(8)" opacity="0.05">
+    <ellipse cx="0" cy="0" rx="7" ry="5" fill="#7B1717" transform="rotate(-15)"/>
+    <line x1="7" y1="-1" x2="7" y2="-30" stroke="#7B1717" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M7 -30 Q24 -36 22 -22" fill="#7B1717"/>
+  </g>
+
+  <!-- Clave de sol — arriba centro -->
+  <g transform="translate(138, 72) rotate(-5) scale(0.9)" opacity="0.042">
+    <path d="M0 28 C-14 20 -18 8 -14 -2 C-10 -12 0 -16 6 -10 C12 -4 12 6 6 14 C0 22 -8 24 -14 18 C-20 12 -18 0 -8 -8 C-2 -14 6 -18 8 -30 C10 -42 4 -52 -2 -54 C-8 -56 -14 -50 -14 -42"
+          stroke="#7B1717" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- ♩ pequeña — esquina superior izquierda del tile para seamless -->
+  <g transform="translate(310, 10) rotate(-18)" opacity="0.055">
+    <ellipse cx="0" cy="0" rx="7" ry="5" fill="#C97B0A" transform="rotate(-15)"/>
+    <line x1="7" y1="-1" x2="7" y2="-32" stroke="#C97B0A" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+
+</svg>

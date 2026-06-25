@@ -1,0 +1,223 @@
+{% extends "layout.njk" %}
+{% block title %}Tu Boleta — Noche de Talentos VIVE{% endblock %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="page-ticket">
+  <div class="grain"></div>
+
+  <div class="ticket-container">
+
+    {# ── Cintillo de estado ── #}
+    {% if ticket.validated_at %}
+      <div class="status-ribbon ribbon-validated">
+        <span class="ribbon-icon">✓</span>
+        <div>
+          <strong>BOLETA VALIDADA</strong>
+          <span>Entrada al evento confirmada · {{ validatedAt }}</span>
+        </div>
+      </div>
+    {% elif ticket.is_paid %}
+      <div class="status-ribbon ribbon-paid">
+        <span class="ribbon-icon">💳</span>
+        <div>
+          <strong>PAGO CONFIRMADO</strong>
+          <span>Boleta pagada — pendiente de validación en puerta</span>
+        </div>
+      </div>
+    {% else %}
+      <div class="status-ribbon ribbon-pending">
+        <span class="ribbon-icon">🎟</span>
+        <div>
+          <strong>BOLETA EMITIDA</strong>
+          <span>Muestra el QR en la entrada del evento</span>
+        </div>
+      </div>
+    {% endif %}
+
+    {# ── Ticket físico ── #}
+    <div class="digital-ticket" id="ticket-card">
+
+      <div class="t-header">
+        <div>
+          <p class="t-event-label">NOCHE DE TALENTOS</p>
+          <h2 class="t-event-name">VIVE</h2>
+          <p class="t-event-sub">Viviendo el Evangelio</p>
+        </div>
+        <div class="t-date-box">
+          <p class="t-date-num">25</p>
+          <p class="t-date-month">JULIO</p>
+          <p class="t-date-year">2026</p>
+          <p class="t-date-time">7:30 PM</p>
+        </div>
+      </div>
+
+      <div class="t-perf">
+        <div class="t-perf-left"></div>
+        <div class="t-perf-dots"></div>
+        <div class="t-perf-right"></div>
+      </div>
+
+      <div class="t-body">
+        <div class="t-info">
+          <div class="t-field">
+            <span class="t-label">Titular</span>
+            <span class="t-value">{{ ticket.name }}</span>
+          </div>
+          <div class="t-field">
+            <span class="t-label">Teléfono</span>
+            <span class="t-value">{{ ticket.phone }}</span>
+          </div>
+          <div class="t-field">
+            <span class="t-label">Lugar</span>
+            <span class="t-value">Casa de Bendición</span>
+          </div>
+          <div class="t-field">
+            <span class="t-label">Precio</span>
+            <span class="t-value is-price">RD$ 300</span>
+          </div>
+          <div class="t-field">
+            <span class="t-label">Estado</span>
+            <span class="t-value">
+              {% if ticket.validated_at %}
+                <span class="t-status validated">✓ Validada</span>
+              {% elif ticket.is_paid %}
+                <span class="t-status paid">💳 Pagada</span>
+              {% else %}
+                <span class="t-status pending">Pendiente</span>
+              {% endif %}
+            </span>
+          </div>
+          <div class="t-field">
+            <span class="t-label">ID</span>
+            <span class="t-value is-id">{{ ticket.id }}</span>
+          </div>
+        </div>
+
+        <div class="t-qr">
+          <img src="{{ qrDataURL }}" alt="Código QR de entrada" crossorigin="anonymous">
+          <p class="t-qr-label">Presenta este QR en la entrada</p>
+        </div>
+      </div>
+
+      <div class="t-footer">
+        <span class="t-stars">★ ★ ★ ★ ★ ★ ★ ★ ★ ★</span>
+        <span class="t-footer-id">{{ ticket.id | truncate(12, true, '') }}</span>
+      </div>
+
+    </div><!-- /ticket-card -->
+
+    <div class="ticket-shadow"></div>
+
+    <div class="ticket-actions">
+      <button id="btn-download-jpg" onclick="downloadTicketJPG()" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><path d="M8 10.5L4.5 7H7V2H9V7H11.5L8 10.5Z" fill="currentColor"/><path d="M2 12H14V14H2V12Z" fill="currentColor"/></svg>
+        Descargar boleta (JPG)
+      </button>
+      <button onclick="window.print()" class="btn-secondary">🖨 Imprimir</button>
+      <a href="/" class="btn-outline">Comprar otra</a>
+    </div>
+
+    <p class="ticket-note">
+      Descarga la imagen y guárdala en tu galería.<br>
+      El código QR es tu entrada — preséntalo en la puerta del evento.
+    </p>
+
+    <div class="cal-section">
+      <p class="cal-label">Agregar al calendario</p>
+      <div class="cal-buttons">
+        <a id="cal-google" href="#" target="_blank" rel="noopener" class="btn-cal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Google Calendar
+        </a>
+        <button onclick="downloadICS()" class="btn-cal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Apple / Outlook
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Evento: 25 Jul 2026, 7:30 PM AST (UTC-4) → 23:30 UTC, duración 2h
+const CAL = {
+  start: '20260725T233000Z',
+  end:   '20260726T013000Z',
+  title: 'Noche de Talentos VIVE',
+  desc:  'Viviendo el Evangelio — presenta tu QR en la entrada.',
+  loc:   'Casa de Bendición'
+}
+
+document.getElementById('cal-google').href =
+  'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+  '&text='     + encodeURIComponent(CAL.title) +
+  '&dates='    + CAL.start + '/' + CAL.end +
+  '&details='  + encodeURIComponent(CAL.desc) +
+  '&location=' + encodeURIComponent(CAL.loc)
+
+function downloadICS() {
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Noche de Talentos VIVE//ES',
+    'BEGIN:VEVENT',
+    'DTSTART:' + CAL.start,
+    'DTEND:'   + CAL.end,
+    'SUMMARY:' + CAL.title,
+    'DESCRIPTION:' + CAL.desc,
+    'LOCATION:' + CAL.loc,
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n')
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href = url; a.download = 'noche-talentos-vive.ics'
+  document.body.appendChild(a); a.click()
+  document.body.removeChild(a); URL.revokeObjectURL(url)
+}
+
+async function downloadTicketJPG() {
+  const btn    = document.getElementById('btn-download-jpg')
+  const ticket = document.getElementById('ticket-card')
+  btn.disabled = true
+  btn.innerHTML = '<span style="opacity:.7">Generando imagen…</span>'
+  await document.fonts.ready
+  try {
+    const canvas = await html2canvas(ticket, {
+      scale: 3, useCORS: true, allowTaint: false,
+      backgroundColor: '#FFFFFF', logging: false, imageTimeout: 8000,
+      onclone: (doc) => {
+        const el = doc.getElementById('ticket-card')
+        if (el) { el.style.boxShadow = '0 2px 24px rgba(0,0,0,0.18)'; el.style.borderRadius = '14px' }
+      }
+    })
+    const pad = 36 * 3
+    const out = document.createElement('canvas')
+    out.width  = canvas.width  + pad * 2
+    out.height = canvas.height + pad * 2
+    const ctx = out.getContext('2d')
+    ctx.fillStyle = '#F6EDD8'
+    ctx.fillRect(0, 0, out.width, out.height)
+    ctx.drawImage(canvas, pad, pad)
+    out.toBlob((blob) => {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = 'boleta-noche-talentos.jpg'
+      document.body.appendChild(a); a.click()
+      document.body.removeChild(a); URL.revokeObjectURL(url)
+    }, 'image/jpeg', 0.96)
+  } catch(err) {
+    alert('No se pudo generar la imagen. Intenta imprimir o tomar captura de pantalla.')
+  } finally {
+    btn.disabled = false
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><path d="M8 10.5L4.5 7H7V2H9V7H11.5L8 10.5Z" fill="currentColor"/><path d="M2 12H14V14H2V12Z" fill="currentColor"/></svg> Descargar boleta (JPG)`
+  }
+}
+</script>
+{% endblock %}
