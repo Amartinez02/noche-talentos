@@ -42,6 +42,8 @@ services:
 
 volumes:
   pgdata:
+    external: true
+    name: noche-talentos_pgdata
   uploads:
   certbot_www:
   certbot_certs:

@@ -4,3 +4,5 @@ node_modules/
 .DS_Store
 static/uploads/participants/*
 !static/uploads/participants/.gitkeep
+static/uploads/transfers/*
+!static/uploads/transfers/.gitkeep

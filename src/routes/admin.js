@@ -92,14 +92,22 @@ export async function adminRoutes(fastify) {
   })
 
   fastify.get('/admin/tickets', async (req, reply) => {
-    const tickets = await db.listTickets()
+    const [tickets, stats] = await Promise.all([db.listTickets(), db.stats()])
     const formatted = tickets.map(t => ({
       ...t,
       created_fmt:   formatDate(t.created_at),
       validated_fmt: formatDate(t.validated_at),
       paid_fmt:      formatDate(t.paid_at)
     }))
-    return reply.view('admin/tickets.njk', { tickets: formatted })
+    return reply.view('admin/tickets.njk', {
+      tickets: formatted,
+      total:     parseInt(stats.total),
+      validated: parseInt(stats.validated),
+      pending:   parseInt(stats.pending),
+      paid:      parseInt(stats.paid),
+      revenue:   parseInt(stats.revenue),
+      unpaid:    parseInt(stats.total) - parseInt(stats.paid)
+    })
   })
 
   fastify.get('/admin/scanner', async (req, reply) => reply.view('admin/scanner.njk'))

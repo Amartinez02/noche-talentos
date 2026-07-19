@@ -9,6 +9,8 @@ const __dirname   = path.dirname(fileURLToPath(import.meta.url))
 const TRANSFER_DIR = path.join(__dirname, '../../static/uploads/transfers')
 const BASE_URL    = () => process.env.BASE_URL || 'http://localhost:8080'
 
+fs.mkdirSync(TRANSFER_DIR, { recursive: true })
+
 const ALLOWED_IMG = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 export async function publicRoutes(fastify) {
@@ -58,7 +60,8 @@ export async function publicRoutes(fastify) {
           part.file?.resume()
         }
       }
-    } catch {
+    } catch (err) {
+      fastify.log.error(err, 'Error processing purchase form')
       return reply.view('purchase.njk', { error: 'Error al procesar el formulario.', ministries })
     }
 

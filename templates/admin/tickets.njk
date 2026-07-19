@@ -26,6 +26,29 @@
       <p class="admin-event-info">Noche de Talentos · 25 Julio 2026</p>
     </div>
 
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-number">{{ total }}</span>
+        <span class="stat-label">Total registros</span>
+      </div>
+      <div class="stat-card stat-paid">
+        <span class="stat-number">{{ paid }}</span>
+        <span class="stat-label">Pagos confirmados</span>
+      </div>
+      <div class="stat-card stat-pending">
+        <span class="stat-number">{{ unpaid }}</span>
+        <span class="stat-label">Pendientes de pago</span>
+      </div>
+      <div class="stat-card stat-validated">
+        <span class="stat-number">{{ validated }}</span>
+        <span class="stat-label">Validadas en puerta</span>
+      </div>
+      <div class="stat-card stat-revenue">
+        <span class="stat-number">RD$ {{ revenue }}</span>
+        <span class="stat-label">Ingresos esperados</span>
+      </div>
+    </div>
+
     {% if tickets.length === 0 %}
     <div class="empty-state">
       <p>Aún no hay boletas vendidas.</p>
