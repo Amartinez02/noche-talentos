@@ -1,4 +1,4 @@
-.PHONY: dev up down logs db install docker-all prod-up prod-down prod-logs prod-build
+.PHONY: dev up down logs db install docker-all prod-up prod-down prod-logs prod-build prod-restart deploy
 
 install:
 	npm install
@@ -37,3 +37,9 @@ prod-down:
 
 prod-logs:
 	docker compose -f docker-compose.prod.yml logs -f
+
+prod-restart:
+	docker compose -f docker-compose.prod.yml restart app
+
+deploy:
+	git pull && docker compose -f docker-compose.prod.yml restart app
