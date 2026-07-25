@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+(function () {
   const btn  = document.getElementById('nav-hamburger')
   const menu = document.getElementById('admin-nav-links')
   if (!btn || !menu) return
@@ -33,4 +33,4 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') close()
   })
-})
+})()
