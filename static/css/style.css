@@ -452,10 +452,14 @@ img { max-width: 100%; display: block; }
 }
 
 /* ── Estado en el ticket ── */
-.t-status { display: inline-block; font-family: var(--font-head); font-size: .82rem; padding: .2rem .6rem; border-radius: 999px; white-space: nowrap; }
-.t-status.validated { background: #dcfce7; color: #15803d; }
-.t-status.paid      { background: #dbeafe; color: #1d4ed8; }
-.t-status.pending   { background: var(--cream-dk); color: var(--gray); }
+.t-status { display: inline-flex; align-items: center; gap: .35rem; font-family: var(--font-head); font-size: .85rem; font-weight: 700; white-space: nowrap; }
+.t-status::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.t-status.validated { color: #15803d; }
+.t-status.validated::before { background: #15803d; }
+.t-status.paid      { color: #1d4ed8; }
+.t-status.paid::before { background: #1d4ed8; }
+.t-status.pending   { color: var(--gray); }
+.t-status.pending::before { background: var(--cream-dk); }
 
 /* ── Sección pago en escáner ── */
 .pay-section { margin-top: .75rem; }
@@ -892,6 +896,12 @@ img { max-width: 100%; display: block; }
 .pagination-btn { display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; padding: .45rem .9rem; }
 .pagination-info { font-size: .85rem; color: var(--gray); }
 .pagination-info strong { color: var(--ink); }
+.pagination-active {
+  border: 2px solid var(--maroon); border-radius: 8px; color: var(--maroon);
+  background: transparent; text-decoration: none; font-weight: 600;
+  transition: background .15s, color .15s;
+}
+.pagination-active:hover { background: var(--maroon); color: var(--white); }
 .pagination-disabled {
   display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; padding: .45rem .9rem;
   border: 2px solid var(--cream-dk); border-radius: 8px; color: var(--cream-dk);

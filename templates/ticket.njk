@@ -22,7 +22,7 @@
       </div>
     {% elif ticket.is_paid %}
       <div class="status-ribbon ribbon-paid">
-        <span class="ribbon-icon">💳</span>
+        <span class="ribbon-icon">✓</span>
         <div>
           <strong>PAGO CONFIRMADO</strong>
           <span>Boleta pagada — pendiente de validación en puerta</span>
@@ -30,7 +30,7 @@
       </div>
     {% else %}
       <div class="status-ribbon ribbon-pending">
-        <span class="ribbon-icon">🎟</span>
+        <span class="ribbon-icon">✦</span>
         <div>
           <strong>BOLETA EMITIDA</strong>
           <span>Muestra el QR en la entrada del evento</span>
@@ -91,7 +91,7 @@
               {% if ticket.validated_at %}
                 <span class="t-status validated">✓ Validada</span>
               {% elif ticket.is_paid %}
-                <span class="t-status paid">💳 Pagada</span>
+                <span class="t-status paid">✓ Pagada</span>
               {% else %}
                 <span class="t-status pending">Pendiente</span>
               {% endif %}
