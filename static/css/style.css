@@ -650,6 +650,8 @@ img { max-width: 100%; display: block; }
   gap: 5px; padding: .5rem; margin-left: .5rem;
   background: none; border: none; cursor: pointer;
   border-radius: 6px; transition: background .15s; flex-shrink: 0;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  min-width: 44px; min-height: 44px;
 }
 .nav-hamburger:hover { background: rgba(255,255,255,.1); }
 .nav-hamburger span {
@@ -910,7 +912,8 @@ img { max-width: 100%; display: block; }
 
 /* ── Tabla → tarjetas en móvil ───────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .admin-nav { padding: 0 1rem; }
+  .admin-nav { padding: 0 1rem; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; }
+  .admin-main { padding-top: calc(56px + 1.5rem); }
   .nav-hamburger { display: flex; }
   .admin-nav-links {
     display: none;

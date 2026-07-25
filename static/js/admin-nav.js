@@ -17,9 +17,22 @@
     document.body.style.overflow = ''
   }
 
-  btn.addEventListener('click', function (e) {
+  function toggle(e) {
     e.stopPropagation()
     menu.classList.contains('open') ? close() : open()
+  }
+
+  var touched = false
+  btn.addEventListener('touchend', function (e) {
+    e.preventDefault()
+    touched = true
+    toggle(e)
+    setTimeout(function () { touched = false }, 500)
+  }, { passive: false })
+
+  btn.addEventListener('click', function (e) {
+    if (touched) return
+    toggle(e)
   })
 
   menu.querySelectorAll('a').forEach(function (a) {
