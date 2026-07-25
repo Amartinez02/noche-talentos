@@ -1,4 +1,4 @@
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
   const btn  = document.getElementById('nav-hamburger')
   const menu = document.getElementById('admin-nav-links')
   if (!btn || !menu) return
@@ -17,13 +17,20 @@
     document.body.style.overflow = ''
   }
 
-  btn.addEventListener('click', () => menu.classList.contains('open') ? close() : open())
+  btn.addEventListener('click', function (e) {
+    e.stopPropagation()
+    menu.classList.contains('open') ? close() : open()
+  })
 
-  menu.querySelectorAll('a').forEach(a => a.addEventListener('click', close))
+  menu.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', close)
+  })
 
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', function (e) {
     if (menu.classList.contains('open') && !e.target.closest('.admin-nav')) close()
   })
 
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close() })
-})()
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') close()
+  })
+})
