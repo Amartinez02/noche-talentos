@@ -1,0 +1,276 @@
+{% extends "layout.njk" %}
+{% block title %}Validación en Puerta — Admin{% endblock %}
+
+{% block head %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="page-admin">
+  <div class="grain"></div>
+
+  <nav class="admin-nav">
+    <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="admin-nav-links" id="admin-nav-links">
+      <a href="/admin/dashboard">Dashboard</a>
+      <a href="/admin/tickets">Boletas</a>
+      <a href="/admin/participants">Participantes</a>
+      <a href="/admin/ministries">Ministerios</a>
+      <a href="/admin/scanner">Escáner</a>
+      <a href="/admin/validacion" class="active">Validación</a>
+      <a href="/admin/users">Usuarios</a>
+      <div class="nav-sep"></div>
+      <form method="POST" action="/admin/logout" style="display:inline">
+        <button type="submit" class="nav-logout">Salir</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="admin-main validacion-main">
+    <div class="admin-title-area">
+      <h2 class="admin-page-title">Validación en Puerta</h2>
+      <p class="admin-event-info">Buscá por teléfono o escaneá el QR de la boleta</p>
+    </div>
+
+    <div class="validacion-wrapper">
+
+      {# ── Botón abrir escáner ── #}
+      <div id="scan-idle">
+        <button class="btn-scan-big" onclick="openScanner()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v4M17 2v4M2 7h4M18 7h4M2 17h4M18 17h4M7 22v-4M17 22v-4M9 9h6v6H9z"/></svg>
+          Escanear Boleta
+        </button>
+      </div>
+
+      {# ── Divisor ── #}
+      <div class="val-divider"><span>o buscar por nombre o teléfono</span></div>
+
+      {# ── Sección teléfono ── #}
+      <div id="phone-section">
+        <div class="val-phone-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 5.5 5.5l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <input type="text" id="phone-input" placeholder="Nombre o teléfono…" autocomplete="off" autofocus>
+        </div>
+        <div id="val-result" class="val-result"></div>
+      </div>
+
+      {# ── Vista escáner activo ── #}
+      <div id="scan-active" class="hidden">
+        <div id="qr-reader-val"></div>
+        <button class="btn-outline val-cancel-btn" onclick="closeScanner()">Cancelar</button>
+      </div>
+
+      {# ── Resultado del escáner ── #}
+      <div id="scan-result" class="hidden">
+        <div id="scan-result-inner"></div>
+        <button class="btn-scan-big btn-scan-again" onclick="scanAgain()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+          Escanear otra boleta
+        </button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Búsqueda por teléfono ─────────────────────────────────────────────────
+const phoneInput = document.getElementById('phone-input')
+const resultEl   = document.getElementById('val-result')
+let debounce = null
+let lastPhone = ''
+
+phoneInput.addEventListener('input', () => {
+  const val = phoneInput.value.trim()
+  clearTimeout(debounce)
+  if (!val) { resultEl.innerHTML = ''; lastPhone = ''; return }
+  if (val === lastPhone) return
+  debounce = setTimeout(() => lookup(val), 400)
+})
+
+phoneInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { clearTimeout(debounce); lookup(phoneInput.value.trim()) }
+})
+
+async function lookup(phone) {
+  if (!phone) return
+  lastPhone = phone
+  resultEl.innerHTML = '<div class="val-loading"><span class="val-spinner"></span> Buscando…</div>'
+  try {
+    const res  = await fetch('/api/lookup', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phone })
+    })
+    const data = await res.json()
+    if (data.status === 'ok') renderTickets(data.tickets)
+    else renderError(data.message)
+  } catch {
+    renderError('Error de conexión.')
+  }
+}
+
+function renderTickets(tickets) {
+  if (tickets.length === 1) {
+    resultEl.innerHTML = ticketCard(tickets[0], false)
+  } else {
+    resultEl.innerHTML = `
+      <p class="val-multiple-hint">${tickets.length} boletas encontradas — elegí una:</p>
+      <div class="val-list">${tickets.map(t => ticketCard(t, false)).join('')}</div>`
+  }
+}
+
+function resetPhoneForm() {
+  phoneInput.value = ''
+  resultEl.innerHTML = ''
+  lastPhone = ''
+  phoneInput.focus()
+}
+
+// ── Escáner QR ────────────────────────────────────────────────────────────
+let qrScanner = null
+
+function openScanner() {
+  document.getElementById('scan-idle').classList.add('hidden')
+  document.getElementById('phone-section').classList.add('hidden')
+  document.getElementById('val-divider') && document.querySelector('.val-divider').classList.add('hidden')
+  document.getElementById('scan-result').classList.add('hidden')
+  document.getElementById('scan-active').classList.remove('hidden')
+  startQrScanner()
+}
+
+function startQrScanner() {
+  document.getElementById('qr-reader-val').innerHTML = ''
+  qrScanner = new Html5Qrcode('qr-reader-val')
+  qrScanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 260, height: 260 } },
+    onQrScan
+  ).catch(() => {
+    document.getElementById('qr-reader-val').innerHTML =
+      '<p class="scanner-error">No se pudo acceder a la cámara.<br>Verificá los permisos del navegador.</p>'
+  })
+}
+
+async function onQrScan(text) {
+  try { qrScanner.pause(true) } catch {}
+
+  const match = text.match(/\/ticket\/([0-9a-f-]{36})/i)
+            || text.match(/\/boleta\/([0-9a-f-]{36})/i)
+            || text.match(/\/admin\/validar\/([0-9a-f-]{36})/i)
+  const ticketId = match?.[1] || text.trim()
+
+  document.getElementById('scan-active').classList.add('hidden')
+  const resultDiv = document.getElementById('scan-result')
+  const inner     = document.getElementById('scan-result-inner')
+  inner.innerHTML = '<div class="val-loading"><span class="val-spinner"></span> Validando…</div>'
+  resultDiv.classList.remove('hidden')
+
+  try {
+    const res  = await fetch(`/api/validate-pay/${ticketId}`, { method: 'POST' })
+    const data = await res.json()
+    if (data.status === 'ok') {
+      inner.innerHTML = scanSuccessCard(data.ticket)
+    } else {
+      inner.innerHTML = `<div class="scanner-result result-error" style="margin-bottom:1rem">
+        <div class="result-icon">✕</div>
+        <h3>BOLETA INVÁLIDA</h3>
+        <p>${esc(data.message || 'No se encontró esta boleta.')}</p>
+      </div>`
+    }
+  } catch {
+    inner.innerHTML = `<div class="val-error">Error de conexión.</div>`
+  }
+}
+
+function scanSuccessCard(t) {
+  const wasAlready = t.validated_at && new Date(t.validated_at) < new Date(Date.now() - 3000)
+  const title  = wasAlready ? 'YA ESTABA VALIDADA' : '¡BOLETA VÁLIDA!'
+  const cls    = wasAlready ? 'result-warn' : 'result-ok'
+  const icon   = wasAlready ? '⚠' : '✓'
+  return `<div class="scanner-result ${cls}" style="margin-bottom:1rem">
+    <div class="result-icon">${icon}</div>
+    <h3>${title}</h3>
+    <p style="font-size:1.05rem;font-weight:600;color:var(--text-dark);margin-bottom:.25rem">${esc(t.name)}</p>
+    <p>Entrada confirmada · Pago registrado</p>
+  </div>`
+}
+
+async function closeScanner() {
+  try { await qrScanner?.stop() } catch {}
+  document.getElementById('scan-active').classList.add('hidden')
+  document.getElementById('scan-idle').classList.remove('hidden')
+  document.getElementById('phone-section').classList.remove('hidden')
+  document.querySelector('.val-divider').classList.remove('hidden')
+}
+
+async function scanAgain() {
+  try { await qrScanner?.stop() } catch {}
+  document.getElementById('scan-result').classList.add('hidden')
+  document.getElementById('scan-active').classList.remove('hidden')
+  startQrScanner()
+}
+
+// ── Shared helpers ────────────────────────────────────────────────────────
+function ticketCard(t, fromScan) {
+  const alreadyValidated = !!t.validated_at
+  const validatedFmt = t.validated_at
+    ? new Date(t.validated_at).toLocaleString('es-DO', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+    : null
+  const statusClass = alreadyValidated ? 'val-card-warn' : 'val-card-ready'
+  const badge = alreadyValidated
+    ? `<span class="val-badge val-badge-warn">✓ Validada — ${validatedFmt}</span>`
+    : `<span class="val-badge val-badge-ok">Lista para validar</span>`
+  const payBadge = t.is_paid
+    ? `<span class="val-badge val-badge-paid">💳 Pagada</span>`
+    : `<span class="val-badge val-badge-unpaid">Sin pagar</span>`
+  const btn = alreadyValidated && t.is_paid
+    ? `<p class="val-done-msg">✓ Ya validada y pagada</p>`
+    : `<button class="btn-val-action" onclick="validateAndPay('${t.id}', this)">${alreadyValidated ? 'Confirmar Pago' : 'Validar y Confirmar Pago'}</button>`
+  return `
+    <div class="val-card ${statusClass}" data-id="${t.id}">
+      <div class="val-card-info">
+        <p class="val-card-name">${esc(t.name)}</p>
+        <p class="val-card-sub">${esc(t.phone)}${t.ministry_name ? ' · ' + esc(t.ministry_name) : ''}</p>
+        <div class="val-badges">${badge}${payBadge}</div>
+      </div>
+      <div class="val-card-action">${btn}</div>
+    </div>`
+}
+
+async function validateAndPay(id, btn) {
+  btn.disabled = true
+  btn.textContent = 'Procesando…'
+  try {
+    const res  = await fetch(`/api/validate-pay/${id}`, { method: 'POST' })
+    const data = await res.json()
+    if (data.status === 'ok') {
+      const card = btn.closest('.val-card')
+      card.className = 'val-card val-card-done'
+      card.querySelector('.val-card-action').innerHTML = '<p class="val-done-msg">✓ Validada y pagada</p>'
+      card.querySelector('.val-badges').innerHTML = `
+        <span class="val-badge val-badge-ok">✓ Validada ahora</span>
+        <span class="val-badge val-badge-paid">💳 Pagada</span>`
+      setTimeout(resetPhoneForm, 2500)
+    } else {
+      btn.disabled = false
+      btn.textContent = 'Error — intentá de nuevo'
+    }
+  } catch {
+    btn.disabled = false
+    btn.textContent = 'Error de conexión'
+  }
+}
+
+function renderError(msg) {
+  resultEl.innerHTML = `<div class="val-error">${esc(msg)}</div>`
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+</script>
+{% endblock %}

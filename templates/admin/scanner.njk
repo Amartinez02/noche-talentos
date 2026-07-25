@@ -11,10 +11,15 @@
 
   <nav class="admin-nav">
     <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
-    <div class="admin-nav-links">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="admin-nav-links" id="admin-nav-links">
       <a href="/admin/dashboard">Dashboard</a>
       <a href="/admin/tickets">Boletas</a>
       <a href="/admin/scanner" class="active">Escáner</a>
+      <a href="/admin/validacion">Validación</a>
+      <a href="/admin/users">Usuarios</a>
       <div class="nav-sep"></div>
       <form method="POST" action="/admin/logout" style="display:inline">
         <button type="submit" class="nav-logout">Salir</button>
@@ -74,10 +79,10 @@ async function onScanSuccess(decodedText) {
   html5QrCode.pause()
 
   // El QR ahora apunta a /ticket/:id
-  const match = decodedText.match(/\/boleta\/([0-9a-f-]{36})/i)
-  // Compatibilidad con QRs viejos que apuntan a /admin/validar/:id
-  const matchOld = decodedText.match(/\/admin\/validar\/([0-9a-f-]{36})/i)
-  const ticketId = (match || matchOld)?.[1] || decodedText.trim()
+  const match = decodedText.match(/\/ticket\/([0-9a-f-]{36})/i)
+              || decodedText.match(/\/boleta\/([0-9a-f-]{36})/i)
+              || decodedText.match(/\/admin\/validar\/([0-9a-f-]{36})/i)
+  const ticketId = match?.[1] || decodedText.trim()
 
   currentTicketId = ticketId
 

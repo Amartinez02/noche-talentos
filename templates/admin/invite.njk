@@ -1,0 +1,33 @@
+{% extends "layout.njk" %}
+
+{% block title %}Activar cuenta — Noche de Talentos VIVE{% endblock %}
+
+{% block body %}
+<div class="page-admin-login">
+  <div class="grain"></div>
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>VIVE</h1>
+      <p>Panel de Administración</p>
+    </div>
+
+    {% if expired %}
+      <div class="alert-error">Este link expiró o ya fue utilizado.</div>
+    {% else %}
+      <p style="margin-bottom:1rem;font-size:.95rem">Hola <strong>{{ user.username }}</strong>, establecé tu contraseña para acceder al panel.</p>
+      {% if error %}<div class="alert-error">{{ error }}</div>{% endif %}
+      <form method="POST" action="/invite/{{ token }}" class="login-form">
+        <div class="field">
+          <label for="password">Nueva contraseña</label>
+          <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required autofocus>
+        </div>
+        <div class="field">
+          <label for="confirm_password">Confirmar contraseña</label>
+          <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-submit">ESTABLECER CONTRASEÑA</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -7,12 +7,17 @@
 
   <nav class="admin-nav">
     <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
-    <div class="admin-nav-links">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="admin-nav-links" id="admin-nav-links">
       <a href="/admin/dashboard">Dashboard</a>
       <a href="/admin/tickets" class="active">Boletas</a>
       <a href="/admin/participants">Participantes</a>
       <a href="/admin/ministries">Ministerios</a>
       <a href="/admin/scanner">Escáner</a>
+      <a href="/admin/validacion">Validación</a>
+      <a href="/admin/users">Usuarios</a>
       <div class="nav-sep"></div>
       <form method="POST" action="/admin/logout" style="display:inline">
         <button type="submit" class="nav-logout">Salir</button>
@@ -26,107 +31,193 @@
       <p class="admin-event-info">Noche de Talentos · 25 Julio 2026</p>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <span class="stat-number">{{ total }}</span>
-        <span class="stat-label">Total registros</span>
-      </div>
-      <div class="stat-card stat-paid">
-        <span class="stat-number">{{ paid }}</span>
-        <span class="stat-label">Pagos confirmados</span>
-      </div>
-      <div class="stat-card stat-pending">
-        <span class="stat-number">{{ unpaid }}</span>
-        <span class="stat-label">Pendientes de pago</span>
-      </div>
-      <div class="stat-card stat-validated">
-        <span class="stat-number">{{ validated }}</span>
-        <span class="stat-label">Validadas en puerta</span>
-      </div>
-      <div class="stat-card stat-revenue">
-        <span class="stat-number">RD$ {{ revenue }}</span>
-        <span class="stat-label">Ingresos esperados</span>
-      </div>
+    <div class="tickets-toolbar">
+      <form class="search-form" id="search-form" method="GET" action="/admin/tickets">
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" name="search" id="search-input" value="{{ search }}" placeholder="Nombre, teléfono o código de boleta…" autocomplete="off">
+          <button type="button" id="search-clear" class="search-clear-btn" aria-label="Limpiar búsqueda">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </form>
+      <a href="/admin/validacion" class="btn-scan-toolbar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v4M17 2v4M2 7h4M18 7h4M2 17h4M18 17h4M7 22v-4M17 22v-4M9 9h6v6H9z"/></svg>
+        Escanear boleta
+      </a>
     </div>
 
-    {% if tickets.length === 0 %}
-    <div class="empty-state">
-      <p>Aún no hay boletas vendidas.</p>
-      <a href="/" class="btn-secondary" target="_blank">Ir a la página de venta</a>
+    <div id="tickets-results">
+      {% if search %}
+      <p class="search-meta">{{ ticketsTotal }} resultado{{ 's' if ticketsTotal != 1 }} para "<strong>{{ search }}</strong>"</p>
+      {% else %}
+      <p class="search-meta">{{ ticketsTotal }} boleta{{ 's' if ticketsTotal != 1 }} en total</p>
+      {% endif %}
+
+      {% if tickets.length === 0 %}
+      <div class="empty-state">
+        {% if search %}
+        <p>No se encontraron boletas para "<strong>{{ search }}</strong>".</p>
+        {% else %}
+        <p>Aún no hay boletas vendidas.</p>
+        <a href="/" class="btn-secondary" target="_blank">Ir a la página de venta</a>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="table-wrapper">
+        <table class="tickets-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Ministerio / Iglesia</th>
+              <th>Emitida</th>
+              <th>Validada</th>
+              <th>Pago</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in tickets %}
+            <tr class="{{ 'row-validated' if t.validated_at }}">
+              <td class="td-name" data-label="Nombre">
+                <strong class="td-name-text">{{ t.name }}</strong>
+                {% if t.is_child %}<span class="badge badge-child">Niño</span>{% endif %}
+                <span class="td-people">{{ t.adult_count }} adulto{{ 's' if t.adult_count != 1 }}{% if t.child_count %} · {{ t.child_count }} niño{{ 's' if t.child_count != 1 }}{% endif %}</span>
+              </td>
+              <td data-label="Teléfono">{{ t.phone }}</td>
+              <td data-label="Correo">{{ t.email }}</td>
+              <td data-label="Ministerio">{{ t.ministry_name or "—" }}</td>
+              <td data-label="Emitida">{{ t.created_fmt }}</td>
+              <td data-label="Validada">
+                {% if t.validated_at %}
+                  <span class="badge badge-ok">✓ {{ t.validated_fmt }}</span>
+                {% else %}
+                  <span class="badge badge-pending">Pendiente</span>
+                {% endif %}
+              </td>
+              <td data-label="Pago">
+                {% if t.is_paid %}
+                  <span class="badge badge-paid">💳 Pagada</span>
+                {% else %}
+                  <span class="badge badge-unpaid">Sin pagar</span>
+                {% endif %}
+                <span class="td-price">RD$ {{ t.price }}</span>
+              </td>
+              <td class="td-actions" data-label="Acciones">
+                <div class="row-menu-wrap">
+                  <button class="btn-row-menu" onclick="toggleRowMenu('{{ t.id }}', event)" aria-label="Acciones">
+                    <span></span><span></span><span></span>
+                  </button>
+                  <div class="row-menu" id="menu-{{ t.id }}">
+                    <a href="/ticket/{{ t.id }}" target="_blank" class="row-menu-item">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      Ver boleta
+                    </a>
+                    {% if t.transfer_proof %}
+                    <button class="row-menu-item" onclick="verComprobante('{{ t.transfer_proof }}', '{{ t.name }}'); closeAllMenus()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      Ver comprobante
+                    </button>
+                    {% endif %}
+                    {% if t.is_paid %}
+                    <button class="row-menu-item" onclick="togglePago('{{ t.id }}', false, this); closeAllMenus()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      Desmarcar pago
+                    </button>
+                    {% else %}
+                    <button class="row-menu-item row-menu-item-green" onclick="togglePago('{{ t.id }}', true, this); closeAllMenus()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Marcar como pagada
+                    </button>
+                    {% endif %}
+                    {% if not t.validated_at %}
+                    <button class="row-menu-item row-menu-item-green" onclick="validarYPagar('{{ t.id }}', this); closeAllMenus()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      Validar y pagar
+                    </button>
+                    {% endif %}
+                    <button class="row-menu-item" onclick="openEditCounts('{{ t.id }}', {{ t.adult_count }}, {{ t.child_count }}); closeAllMenus()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      Editar personas
+                    </button>
+                    <button class="row-menu-item row-menu-item-danger" onclick="eliminarBoleta('{{ t.id }}', '{{ t.name }}', this); closeAllMenus()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                      Eliminar boleta
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if totalPages > 1 %}
+      <div class="pagination">
+        {% if hasPrev %}
+        <a href="/admin/tickets?page={{ prevPage }}{% if search %}&search={{ search }}{% endif %}" class="btn-secondary pagination-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Anterior
+        </a>
+        {% else %}
+        <span class="pagination-btn pagination-disabled">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Anterior
+        </span>
+        {% endif %}
+
+        <span class="pagination-info">Página <strong>{{ page }}</strong> de <strong>{{ totalPages }}</strong></span>
+
+        {% if hasNext %}
+        <a href="/admin/tickets?page={{ nextPage }}{% if search %}&search={{ search }}{% endif %}" class="btn-secondary pagination-btn">
+          Siguiente
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+        {% else %}
+        <span class="pagination-btn pagination-disabled">
+          Siguiente
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% endif %}
     </div>
-    {% else %}
-    <div class="table-wrapper">
-      <table class="tickets-table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Teléfono</th>
-            <th>Correo</th>
-            <th>Ministerio / Iglesia</th>
-            <th>Emitida</th>
-            <th>Validada</th>
-            <th>Comprobante</th>
-            <th>Pago</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for t in tickets %}
-          <tr class="{{ 'row-validated' if t.validated_at }}">
-            <td class="td-name" data-label="Nombre">{{ t.name }}</td>
-            <td data-label="Teléfono">{{ t.phone }}</td>
-            <td data-label="Correo">{{ t.email }}</td>
-            <td data-label="Ministerio">{{ t.ministry_name or "—" }}</td>
-            <td data-label="Emitida">{{ t.created_fmt }}</td>
-            <td data-label="Validada">
-              {% if t.validated_at %}
-                <span class="badge badge-ok">✓ {{ t.validated_fmt }}</span>
-              {% else %}
-                <span class="badge badge-pending">Pendiente</span>
-              {% endif %}
-            </td>
-            <td data-label="Comprobante">
-              {% if t.transfer_proof %}
-                <button class="btn-icon btn-icon-maroon" title="Ver comprobante"
-                        onclick="verComprobante('{{ t.transfer_proof }}', '{{ t.name }}')">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                </button>
-              {% else %}
-                <span class="proof-none">—</span>
-              {% endif %}
-            </td>
-            <td data-label="Pago">
-              {% if t.is_paid %}
-                <span class="badge badge-paid">💳 Pagada</span>
-              {% else %}
-                <span class="badge badge-unpaid">Sin pagar</span>
-              {% endif %}
-            </td>
-            <td class="td-actions" data-label="Acciones">
-              <a href="/ticket/{{ t.id }}" target="_blank" class="btn-icon btn-icon-maroon" title="Ver boleta">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </a>
-              {% if t.is_paid %}
-                <button class="btn-icon btn-icon-outline" title="Desmarcar pago" onclick="togglePago('{{ t.id }}', false, this)">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              {% else %}
-                <button class="btn-icon btn-icon-gold" title="Marcar como pagada" onclick="togglePago('{{ t.id }}', true, this)">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </button>
-              {% endif %}
-              <button class="btn-icon btn-icon-danger" title="Eliminar boleta" onclick="eliminarBoleta('{{ t.id }}', '{{ t.name }}', this)">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-              </button>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% endif %}
   </main>
 </div>
+
+<dialog id="edit-counts-modal" class="counts-modal">
+  <form id="edit-counts-form">
+    <h3>Editar personas</h3>
+    <input type="hidden" id="edit-ticket-id">
+    <div class="counts-modal-grid">
+      <label>Adultos (RD$ 300 c/u)
+        <div class="counter-wrap">
+          <button type="button" class="counter-btn" onclick="adjustModalCount('edit_adult',-1)">−</button>
+          <input type="number" id="edit_adult" value="1" min="0" max="20" readonly class="counter-input">
+          <button type="button" class="counter-btn" onclick="adjustModalCount('edit_adult',1)">+</button>
+        </div>
+      </label>
+      <label>Niños (RD$ 100 c/u)
+        <div class="counter-wrap">
+          <button type="button" class="counter-btn" onclick="adjustModalCount('edit_child',-1)">−</button>
+          <input type="number" id="edit_child" value="0" min="0" max="20" readonly class="counter-input">
+          <button type="button" class="counter-btn" onclick="adjustModalCount('edit_child',1)">+</button>
+        </div>
+      </label>
+    </div>
+    <p class="counts-modal-total">Total: <strong id="modal-price-total">RD$ 300</strong></p>
+    <div class="counts-modal-actions">
+      <button type="button" class="btn-secondary" onclick="document.getElementById('edit-counts-modal').close()">Cancelar</button>
+      <button type="button" class="btn-primary" onclick="saveEditCounts()">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="row-menu-backdrop" class="row-menu-backdrop" onclick="closeAllMenus()"></div>
 
 {# ── Modal comprobante ── #}
 <div id="proof-modal" class="proof-modal hidden" onclick="cerrarModal(event)">
@@ -163,7 +254,37 @@ function cerrarModal(e) {
   document.body.style.overflow = ''
 }
 
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModal() })
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.row-menu').forEach(m => document.body.appendChild(m))
+})
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarModal(); closeAllMenus() } })
+document.addEventListener('click', (e) => { if (!e.target.closest('.row-menu-wrap') && !e.target.closest('.row-menu')) closeAllMenus() })
+
+const isMobile = () => window.innerWidth <= 768
+
+function toggleRowMenu(id, e) {
+  e.stopPropagation()
+  const menu = document.getElementById('menu-' + id)
+  const isOpen = menu.classList.contains('open')
+  closeAllMenus()
+  if (!isOpen) {
+    if (!isMobile()) {
+      const btn  = e.currentTarget
+      const rect = btn.getBoundingClientRect()
+      const menuH = 280
+      const spaceBelow = window.innerHeight - rect.bottom
+      const top = spaceBelow < menuH ? (rect.top - menuH - 4) : (rect.bottom + 4)
+      menu.style.top  = top + 'px'
+      menu.style.left = Math.max(8, rect.right - 190) + 'px'
+    }
+    menu.classList.add('open')
+    if (isMobile()) document.getElementById('row-menu-backdrop').classList.add('open')
+  }
+}
+function closeAllMenus() {
+  document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'))
+  document.getElementById('row-menu-backdrop')?.classList.remove('open')
+}
 
 async function eliminarBoleta(id, nombre, btn) {
   if (!confirm(`¿Eliminar la boleta de "${nombre}"? Esta acción no se puede deshacer.`)) return
@@ -194,7 +315,6 @@ async function togglePago(id, pagar, btn) {
     const res  = await fetch(endpoint, { method: 'POST' })
     const data = await res.json()
     if (data.status === 'ok') {
-      // Recargar la fila actualizando la página
       location.reload()
     } else {
       btn.disabled = false
@@ -205,5 +325,138 @@ async function togglePago(id, pagar, btn) {
     btn.textContent = 'Error'
   }
 }
+
+async function toggleChild(id, btn) {
+  btn.disabled = true
+  try {
+    const res  = await fetch(`/api/toggle-child/${id}`, { method: 'POST' })
+    const data = await res.json()
+    if (data.status === 'ok') {
+      location.reload()
+    } else {
+      btn.disabled = false
+    }
+  } catch {
+    btn.disabled = false
+  }
+}
+
+async function validarYPagar(id, btn) {
+  btn.disabled = true
+  try {
+    const res  = await fetch(`/api/validate-pay/${id}`, { method: 'POST' })
+    const data = await res.json()
+    if (data.status === 'ok') {
+      location.reload()
+    } else {
+      btn.disabled = false
+    }
+  } catch {
+    btn.disabled = false
+  }
+}
+
+function openEditCounts(id, adults, children) {
+  document.getElementById('edit-ticket-id').value = id
+  document.getElementById('edit_adult').value = adults
+  document.getElementById('edit_child').value = children
+  updateModalPrice()
+  document.getElementById('edit-counts-modal').showModal()
+}
+function adjustModalCount(inputId, delta) {
+  const input = document.getElementById(inputId)
+  const otherId = inputId === 'edit_adult' ? 'edit_child' : 'edit_adult'
+  const other   = document.getElementById(otherId)
+  const newVal  = Math.max(0, parseInt(input.value) + delta)
+  if (newVal === 0 && parseInt(other.value) === 0) return
+  input.value = newVal
+  updateModalPrice()
+}
+function updateModalPrice() {
+  const a = parseInt(document.getElementById('edit_adult').value) || 0
+  const c = parseInt(document.getElementById('edit_child').value) || 0
+  document.getElementById('modal-price-total').textContent = `RD$ ${a * 300 + c * 100}`
+}
+async function saveEditCounts() {
+  const id = document.getElementById('edit-ticket-id').value
+  const adult_count = parseInt(document.getElementById('edit_adult').value) || 0
+  const child_count = parseInt(document.getElementById('edit_child').value) || 0
+  try {
+    const res  = await fetch(`/api/update-counts/${id}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ adult_count, child_count })
+    })
+    const data = await res.json()
+    if (data.status === 'ok') { document.getElementById('edit-counts-modal').close(); location.reload() }
+  } catch {}
+}
+
+// ── Live search ────────────────────────────────────────────────────────────
+const searchInput = document.getElementById('search-input')
+const clearBtn    = document.getElementById('search-clear')
+const resultsEl   = document.getElementById('tickets-results')
+
+function syncClearBtn() {
+  clearBtn.style.display = searchInput.value ? 'flex' : 'none'
+}
+syncClearBtn()
+
+async function loadResults(url) {
+  try {
+    const res  = await fetch(url)
+    const html = await res.text()
+    const doc  = new DOMParser().parseFromString(html, 'text/html')
+    const next = doc.getElementById('tickets-results')
+    if (next) resultsEl.innerHTML = next.innerHTML
+  } catch (_) {}
+}
+
+function navigate(q, page) {
+  const url = new URL('/admin/tickets', location.origin)
+  if (q)    url.searchParams.set('search', q)
+  if (page) url.searchParams.set('page', page)
+  history.pushState(null, '', url.toString())
+  loadResults(url)
+}
+
+let debounce = null
+
+clearBtn.addEventListener('click', () => {
+  searchInput.value = ''
+  syncClearBtn()
+  searchInput.focus()
+  navigate('')
+})
+
+searchInput.addEventListener('input', () => {
+  syncClearBtn()
+  clearTimeout(debounce)
+  debounce = setTimeout(() => navigate(searchInput.value.trim()), 350)
+})
+
+document.getElementById('search-form').addEventListener('submit', (e) => {
+  e.preventDefault()
+  clearTimeout(debounce)
+  navigate(searchInput.value.trim())
+})
+
+// Intercept pagination links inside #tickets-results (delegated — el div se reemplaza)
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('#tickets-results .pagination a')
+  if (!link) return
+  e.preventDefault()
+  const url = new URL(link.href)
+  history.pushState(null, '', url.toString())
+  loadResults(url)
+})
+
+window.addEventListener('popstate', () => {
+  const params = new URLSearchParams(location.search)
+  const q = params.get('search') || ''
+  searchInput.value = q
+  syncClearBtn()
+  loadResults(new URL(location.href))
+})
 </script>
 {% endblock %}

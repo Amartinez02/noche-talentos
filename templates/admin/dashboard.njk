@@ -8,12 +8,17 @@
 
   <nav class="admin-nav">
     <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>Admin</span></div>
-    <div class="admin-nav-links">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="admin-nav-links" id="admin-nav-links">
       <a href="/admin/dashboard" class="active">Dashboard</a>
       <a href="/admin/tickets">Boletas</a>
       <a href="/admin/participants">Participantes</a>
       <a href="/admin/ministries">Ministerios</a>
       <a href="/admin/scanner">Escáner</a>
+      <a href="/admin/validacion">Validación</a>
+      <a href="/admin/users">Usuarios</a>
       <form method="POST" action="/admin/logout" style="display:inline">
         <button type="submit" class="nav-logout">Salir</button>
       </form>
@@ -26,27 +31,31 @@
 
     <div class="stats-grid">
       <div class="stat-card">
-        <span class="stat-number">{{ total }}</span>
-        <span class="stat-label">Boletas emitidas</span>
+        <span class="stat-number">{{ adults }}</span>
+        <span class="stat-label">Boletas adultos</span>
+        <span class="stat-sublabel">RD$ {{ adults_revenue }}</span>
+      </div>
+      <div class="stat-card stat-children">
+        <span class="stat-number">{{ children }}</span>
+        <span class="stat-label">Boletas niños</span>
+        <span class="stat-sublabel">RD$ {{ children_revenue }}</span>
+      </div>
+      <div class="stat-card stat-paid">
+        <span class="stat-number">{{ paid }}</span>
+        <span class="stat-label">Total pagadas</span>
+      </div>
+      <div class="stat-card stat-pending">
+        <span class="stat-number">{{ unpaid }}</span>
+        <span class="stat-label">Pendientes de pago</span>
+      </div>
+      <div class="stat-card stat-revenue">
+        <span class="stat-number">RD$ {{ revenue }}</span>
+        <span class="stat-label">Ingresos esperados</span>
       </div>
       <div class="stat-card stat-validated">
         <span class="stat-number">{{ validated }}</span>
         <span class="stat-label">Validadas en puerta</span>
       </div>
-      <div class="stat-card stat-paid">
-        <span class="stat-number">{{ paid }}</span>
-        <span class="stat-label">Pagos confirmados</span>
-      </div>
-      <div class="stat-card stat-pending">
-        <span class="stat-number">{{ pending }}</span>
-        <span class="stat-label">Sin validar</span>
-      </div>
-    </div>
-
-    <div class="quick-actions">
-      <a href="/admin/scanner" class="btn-primary">📷 Abrir Escáner QR</a>
-      <a href="/admin/tickets" class="btn-secondary">📋 Ver boletas</a>
-      <a href="/admin/participants" class="btn-secondary">🎤 Gestionar participantes</a>
     </div>
   </main>
 </div>

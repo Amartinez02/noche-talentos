@@ -1,0 +1,212 @@
+{% extends "layout.njk" %}
+{% block title %}Usuarios — Admin{% endblock %}
+
+{% block body %}
+<div class="page-admin">
+  <div class="grain"></div>
+
+  <nav class="admin-nav">
+    <div class="admin-brand"><img src="/static/img/vive-logo.png" alt="VIVE" class="nav-logo"><span>PANEL ADMIN</span></div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="admin-nav-links" id="admin-nav-links">
+      <a href="/admin/dashboard">Dashboard</a>
+      <a href="/admin/tickets">Boletas</a>
+      <a href="/admin/participants">Participantes</a>
+      <a href="/admin/ministries">Ministerios</a>
+      <a href="/admin/scanner">Escáner</a>
+      <a href="/admin/validacion">Validación</a>
+      <a href="/admin/users" class="active">Usuarios</a>
+      <div class="nav-sep"></div>
+      <form method="POST" action="/admin/logout" style="display:inline">
+        <button type="submit" class="nav-logout">Salir</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="admin-main">
+    <div class="admin-title-area">
+      <h2 class="admin-page-title">Usuarios del panel</h2>
+      <p class="admin-event-info">Cuentas con acceso al panel de administración · {{ users.length }} usuario{{ "s" if users.length != 1 }}</p>
+    </div>
+
+    <div id="flash-success" class="flash-success" style="display:none"></div>
+
+    {% if createError %}
+    <div class="alert-error">{{ createError }}</div>
+    {% endif %}
+
+    <div class="ministry-layout">
+
+      <div class="ministry-add-card">
+        {% if inviteLink %}
+        <div class="invite-banner">
+          <p class="invite-banner-title">✓ Usuario <strong>{{ inviteFor }}</strong> creado — compartí este link:</p>
+          <div class="invite-link-row">
+            <input type="text" class="invite-link-input" id="invite-link-val" value="{{ inviteLink }}" readonly>
+            <button class="btn-copy" onclick="copyInviteLink()">Copiar</button>
+          </div>
+          <p class="invite-banner-note">El link expira en 72 horas.</p>
+        </div>
+        {% endif %}
+
+        <h3 class="ministry-add-title">Crear usuario</h3>
+        <form method="POST" action="/admin/users/create" class="user-create-form" id="create-form">
+          <div class="field">
+            <label for="new-username">Usuario</label>
+            <input type="text" id="new-username" name="username" class="ministry-input"
+                   placeholder="usuario" required autocomplete="off"
+                   pattern="[a-zA-Z0-9_\-]{3,50}" title="3–50 caracteres: letras, números, guiones">
+          </div>
+          <button type="submit" class="btn-primary">+ Crear y generar link</button>
+        </form>
+      </div>
+
+      {% if users.length === 0 %}
+      <div class="empty-state">
+        <p>No hay usuarios registrados.</p>
+      </div>
+      {% else %}
+      <div class="ministry-list">
+        {% for u in users %}
+        <div class="ministry-row">
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0">
+            <span class="ministry-name">
+              {{ u.username }}
+              {% if u.username === currentUser %}<span class="user-you-badge">(vos)</span>{% endif %}
+              {% if u.pending %}
+              <span class="user-status-badge user-status-pending">Pendiente</span>
+              {% else %}
+              <span class="user-status-badge user-status-active">Activo</span>
+              {% endif %}
+            </span>
+            <span class="ministry-drag-hint" style="font-size:0.75rem;opacity:0.6">Creado: {{ u.created_fmt }}</span>
+          </div>
+          <div class="ministry-actions">
+            {% if u.pending %}
+            <form method="POST" action="/admin/users/{{ u.id }}/regenerate-invite" style="display:inline">
+              <button type="submit" class="btn-tiny btn-tiny-gold">Regenerar link</button>
+            </form>
+            {% else %}
+            <button class="btn-tiny btn-tiny-gold" onclick="openPasswordModal({{ u.id }}, '{{ u.username }}')">
+              Cambiar contraseña
+            </button>
+            {% endif %}
+            {% if users.length > 1 %}
+            <form method="POST" action="/admin/users/{{ u.id }}/delete" style="display:inline"
+                  onsubmit="return confirm('¿Eliminar el usuario «{{ u.username }}»? Esta acción no se puede deshacer.')">
+              <button type="submit" class="btn-tiny btn-tiny-danger">Eliminar</button>
+            </form>
+            {% else %}
+            <button class="btn-tiny btn-tiny-danger" disabled title="No se puede eliminar el último usuario">Eliminar</button>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+  </main>
+</div>
+
+<!-- Change password modal -->
+<dialog id="pw-modal" class="admin-dialog">
+  <form method="POST" id="pw-modal-form" class="admin-dialog-inner">
+    <h3 class="ministry-add-title" id="pw-modal-title">Cambiar contraseña</h3>
+    <input type="hidden" name="_userId" id="pw-modal-user-id">
+    <div class="field">
+      <label for="pw-new">Nueva contraseña</label>
+      <input type="password" id="pw-new" name="new_password" class="ministry-input"
+             placeholder="mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="pw-confirm">Confirmar contraseña</label>
+      <input type="password" id="pw-confirm" name="confirm_password" class="ministry-input"
+             placeholder="repetir contraseña" required minlength="6" autocomplete="new-password">
+    </div>
+    <div id="pw-modal-error" class="alert-error" style="display:none">Las contraseñas no coinciden.</div>
+    <div style="display:flex;gap:0.75rem;margin-top:1rem">
+      <button type="submit" class="btn-primary">Guardar</button>
+      <button type="button" class="btn-outline" onclick="document.getElementById('pw-modal').close()">Cancelar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+// ── Hamburger nav ────────────────────────────────────────────────────────────
+const hamburger = document.getElementById('nav-hamburger')
+const navLinks  = document.getElementById('admin-nav-links')
+if (hamburger && navLinks) {
+  hamburger.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open')
+    hamburger.setAttribute('aria-expanded', String(open))
+  })
+}
+
+// ── Flash messages ───────────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search)
+const flashEl = document.getElementById('flash-success')
+if (params.get('changed') === '1') {
+  flashEl.textContent = 'Contraseña actualizada correctamente.'
+  flashEl.style.display = 'block'
+} else if (params.get('pwError') === 'mismatch') {
+  flashEl.textContent = ''
+  const errEl = document.createElement('div')
+  errEl.className = 'alert-error'
+  errEl.textContent = 'Las contraseñas no coinciden.'
+  flashEl.parentNode.insertBefore(errEl, flashEl)
+} else if (params.get('pwError') === 'short') {
+  const errEl = document.createElement('div')
+  errEl.className = 'alert-error'
+  errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.'
+  flashEl.parentNode.insertBefore(errEl, flashEl)
+} else if (params.get('deleteError') === 'last') {
+  const errEl = document.createElement('div')
+  errEl.className = 'alert-error'
+  errEl.textContent = 'No se puede eliminar el único usuario del panel.'
+  flashEl.parentNode.insertBefore(errEl, flashEl)
+}
+
+// ── Copy invite link ──────────────────────────────────────────────────────────
+function copyInviteLink() {
+  const val = document.getElementById('invite-link-val').value
+  navigator.clipboard.writeText(val).then(() => {
+    const btn = document.querySelector('.btn-copy')
+    btn.textContent = '✓ Copiado'
+    setTimeout(() => btn.textContent = 'Copiar', 2000)
+  }).catch(() => {
+    document.getElementById('invite-link-val').select()
+    document.execCommand('copy')
+  })
+}
+
+// ── Change password modal ────────────────────────────────────────────────────
+function openPasswordModal(userId, username) {
+  const modal = document.getElementById('pw-modal')
+  document.getElementById('pw-modal-title').textContent = 'Cambiar contraseña — ' + username
+  document.getElementById('pw-modal-user-id').value = userId
+  document.getElementById('pw-modal-form').action = '/admin/users/' + userId + '/change-password'
+  document.getElementById('pw-new').value = ''
+  document.getElementById('pw-confirm').value = ''
+  document.getElementById('pw-modal-error').style.display = 'none'
+  modal.showModal()
+}
+
+const pwModalForm = document.getElementById('pw-modal-form')
+if (pwModalForm) {
+  pwModalForm.addEventListener('submit', function (e) {
+    const pw  = document.getElementById('pw-new').value
+    const cpw = document.getElementById('pw-confirm').value
+    const errEl = document.getElementById('pw-modal-error')
+    if (pw !== cpw) {
+      e.preventDefault()
+      errEl.style.display = 'block'
+    } else {
+      errEl.style.display = 'none'
+    }
+  })
+}
+</script>
+{% endblock %}

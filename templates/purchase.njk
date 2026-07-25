@@ -69,7 +69,6 @@
             <label for="email">Correo electrónico</label>
             <input type="email" id="email" name="email" placeholder="Ej: maria@ejemplo.com" required autocomplete="email">
           </div>
-          {% if ministries and ministries.length > 0 %}
           <div class="field">
             <label for="ministry_id">Ministerio / Iglesia que te invita</label>
             <select id="ministry_id" name="ministry_id">
@@ -79,9 +78,29 @@
               {% endfor %}
             </select>
           </div>
-          {% else %}
-          <div class="field"></div>
-          {% endif %}
+
+          <div class="field field-full">
+            <label class="people-count-label">Personas que asisten</label>
+            <div class="people-count-grid">
+              <div class="people-count-item">
+                <span class="people-count-type">Adultos <em>(RD$ 300 c/u)</em></span>
+                <div class="counter-wrap">
+                  <button type="button" class="counter-btn" onclick="adjustCount('adult',-1)">−</button>
+                  <input type="number" name="adult_count" id="adult_count" value="1" min="0" max="20" readonly class="counter-input">
+                  <button type="button" class="counter-btn" onclick="adjustCount('adult',1)">+</button>
+                </div>
+              </div>
+              <div class="people-count-item">
+                <span class="people-count-type">Niños <em>(RD$ 100 c/u)</em></span>
+                <div class="counter-wrap">
+                  <button type="button" class="counter-btn" onclick="adjustCount('child',-1)">−</button>
+                  <input type="number" name="child_count" id="child_count" value="0" min="0" max="20" readonly class="counter-input">
+                  <button type="button" class="counter-btn" onclick="adjustCount('child',1)">+</button>
+                </div>
+              </div>
+            </div>
+            <p class="people-count-total">Total: <strong id="price-total">RD$ 300</strong></p>
+          </div>
 
           <div class="field field-full">
             <label for="transfer_proof">Comprobante de transferencia</label>
@@ -108,5 +127,20 @@ document.getElementById('transfer_proof').addEventListener('change', function() 
   const label = document.getElementById('file-name-label')
   label.textContent = this.files.length ? this.files[0].name : 'Sin archivo seleccionado'
 })
+
+function adjustCount(type, delta) {
+  const input = document.getElementById(type === 'adult' ? 'adult_count' : 'child_count')
+  const newVal = Math.max(0, parseInt(input.value) + delta)
+  const otherInput = document.getElementById(type === 'adult' ? 'child_count' : 'adult_count')
+  if (newVal === 0 && parseInt(otherInput.value) === 0) return
+  input.value = newVal
+  updatePrice()
+}
+function updatePrice() {
+  const adults   = parseInt(document.getElementById('adult_count').value) || 0
+  const children = parseInt(document.getElementById('child_count').value) || 0
+  document.getElementById('price-total').textContent = `RD$ ${adults * 300 + children * 100}`
+  document.querySelector('.feb-price').textContent = `RD$ ${adults * 300 + children * 100}`
+}
 </script>
 {% endblock %}

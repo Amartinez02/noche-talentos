@@ -72,11 +72,14 @@ export async function publicRoutes(fastify) {
       return reply.view('purchase.njk', { error: 'Todos los campos son requeridos.', ministries })
     }
 
+    const adultCount = Math.max(0, parseInt(fields.adult_count) || 1)
+    const childCount = Math.max(0, parseInt(fields.child_count) || 0)
+
     const proofRelPath = transferProofPath
       ? `/uploads/transfers/${path.basename(transferProofPath)}`
       : null
 
-    const ticket = await db.createTicket(n, p, e, ministry_id || null, proofRelPath)
+    const ticket = await db.createTicket(n, p, e, ministry_id || null, proofRelPath, adultCount, childCount)
     return reply.redirect(`/ticket/${ticket.id}`)
   })
 

@@ -8,7 +8,8 @@ import fastifyCookie from '@fastify/cookie'
 import fastifyMultipart from '@fastify/multipart'
 import nunjucks from 'nunjucks'
 
-import { migrate } from './db.js'
+import { migrate, db } from './db.js'
+import { hashPassword } from './middleware/auth.js'
 import { publicRoutes } from './routes/public.js'
 import { adminRoutes } from './routes/admin.js'
 import { participantRoutes } from './routes/participants.js'
@@ -53,6 +54,13 @@ fastify.setNotFoundHandler((req, reply) => {
 
 try {
   await migrate()
+  const userCount = await db.countUsers()
+  if (userCount === 0) {
+    const pw = process.env.ADMIN_PASSWORD || 'admin123'
+    const hash = await hashPassword(pw)
+    await db.createUser('admin', hash)
+    fastify.log.info('Default admin user created (username: admin)')
+  }
   fastify.log.info('Database ready')
   await fastify.listen({ port: 8080, host: '0.0.0.0' })
 } catch (err) {
